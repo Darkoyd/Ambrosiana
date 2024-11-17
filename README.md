@@ -1,6 +1,6 @@
-## Ambrosiana Backend
+## Ambrosiana
 
-This repository provides a the backend in AWS Amplify fro Ambrosiana, a book marketplace for university students.
+This repository provides the Ambrosiana App in AWS Amplify and Kotlin, a book marketplace for university students.
 
 ## Features
 

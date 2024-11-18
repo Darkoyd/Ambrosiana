@@ -8,8 +8,22 @@ specifies that any user authenticated via an API key can "create", "read",
 "update", and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
+  Wishlist: a.model({
+    id: a.id().required(),
+    userId: a.string().required(),
+    user: a.belongsTo("User", "userId"),
+    books: a.hasMany("BookWishlist", "wishlistId")
+  }),
+
+  BookWishlist: a.model({
+    bookId: a.id().required(),
+    wishlistId: a.id().required(),
+    book: a.belongsTo("Book", "bookId"),
+    list: a.belongsTo("Wishlist", "wishlistId")
+  }),
+
   Book: a.model({
-    id : a.id().required(),
+    id: a.id().required(),
     title: a.string().required(),
     isbn: a.string().required(),
     authorId: a.string().required(),
@@ -17,8 +31,23 @@ const schema = a.schema({
     categories: a.hasMany("BookCategory", "bookId"),
     ratings: a.hasMany("BookRating", "bookId"),
     listings: a.hasMany("Listing", "bookId"),
-    wishlist: a.hasMany("Wishlist", "bookId"),
+    wishlists: a.hasMany("BookWishlist", "bookId"),
+    libraries: a.hasMany("BookLibrary", "bookId")
   }).secondaryIndexes((index) => [index("isbn")]),
+
+  UserLibrary: a.model({
+    id: a.id().required(),
+    userId: a.string().required(),
+    user: a.belongsTo("User", "userId"),
+    books: a.hasMany("BookLibrary", "libraryId"),
+  }),
+
+  BookLibrary: a.model({
+    bookId: a.id().required(),
+    libraryId: a.id().required(),
+    book: a.belongsTo("Book", "bookId"),
+    library: a.belongsTo("UserLibrary", "libraryId")
+  }),
 
   BookCategory: a.model({
     categoryId: a.string().required(),
@@ -39,19 +68,13 @@ const schema = a.schema({
     lastName: a.string(),
     address: a.string(),
     phone: a.string(),
-    libraryId: a.id(),
-    library: a.hasOne("UserLibrary", "id"),
-    ratingsReceived: a.hasMany("UserRating", "ratedUser"),
+    library: a.hasOne("UserLibrary", "userId"),
+    ratingsReceived: a.hasMany("UserRating", "ratedId"),
     ratings: a.hasMany("UserRating", "userId"),
     listings: a.hasMany("Listing", "userId"),
+    wishlist: a.hasOne("Wishlist", "userId"),
+    cart: a.hasOne("Cart", "userId")
   }).identifier(["email"]),
-
-  UserLibrary: a.model({
-    id: a.id().required(),
-    userId: a.string().required(),
-    user: a.belongsTo("User", "userId"),
-    books: a.hasMany("Book", "id"),
-  }),
 
   UserRating: a.model({
     id: a.id().required(),
@@ -66,7 +89,7 @@ const schema = a.schema({
   Category: a.model({
     id: a.id().required(),
     name: a.string().required(),
-    books: a.hasMany("BookCategory", "CategoryId"),
+    books: a.hasMany("BookCategory", "categoryId"),
   }),
 
   BookRating: a.model({
@@ -84,25 +107,19 @@ const schema = a.schema({
     userId: a.string().required(),
     user: a.belongsTo("User", "userId"),
     price: a.float().required(),
+    status: a.enum(["available", "unavailable", "sold"]),
     photos: a.string().array().required(),
+    cartId: a.id(),
+    cart: a.belongsTo("Cart", "cartId")
   }),
 
   Cart: a.model({
     id: a.id().required(),
     userId: a.string().required(),
     user: a.belongsTo("User", "userId"),
-    listings: a.hasMany("Listing", "id"),
+    listings: a.hasMany("Listing", "cartId"),
     state: a.enum(["active", "completed", "shipping"]),
   }),
-
-  Wishlist: a.model({
-    id: a.id().required(),
-    userId: a.string().required(),
-    user: a.belongsTo("User", "userId"),
-    books: a.hasMany("Book", "id"),
-  })
-
-  
 }).authorization((allow) => [allow.owner()]);
 
 export type Schema = ClientSchema<typeof schema>;

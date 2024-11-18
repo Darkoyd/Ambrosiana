@@ -1,4 +1,5 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
+import { list } from "aws-amplify/storage";
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -11,26 +12,98 @@ const schema = a.schema({
     id : a.id().required(),
     title: a.string().required(),
     isbn: a.string().required(),
-    author: a.belongsTo({ model: "Author", targetName: "author" }),
-  }).identifier(['id']).secondaryIndexes((index) => ['isbn']),
+    authorId: a.string().required(),
+    author: a.belongsTo("Author", "authorId"),
+    categories: a.hasMany("BookCategory", "bookId"),
+    ratings: a.hasMany("BookRating", "bookId"),
+    listings: a.hasMany("Listing", "bookId"),
+    wishlist: a.hasMany("Wishlist", "bookId"),
+  }).secondaryIndexes((index) => [index("isbn")]),
+
+  BookCategory: a.model({
+    categoryId: a.string().required(),
+    bookId: a.string().required(),
+    category: a.belongsTo("Category", "categoryId"),
+    book: a.belongsTo("Book", "bookId"),
+  }),
+
   Author: a.model({
     id: a.id().required(),
     name: a.string().required(),
-    books: a.hasMany({ model: "Book", targetName: "books" }),
-  }).identifier(['id']),
+    books: a.hasMany("Book", "authorId"),
+  }),
+
   User: a.model({
     email: a.string().required(),
     firstName: a.string(),
     lastName: a.string(),
     address: a.string(),
-  }).identifier('email'),
+    phone: a.string(),
+    libraryId: a.id(),
+    library: a.hasOne("UserLibrary", "id"),
+    ratingsReceived: a.hasMany("UserRating", "ratedUser"),
+    ratings: a.hasMany("UserRating", "userId"),
+    listings: a.hasMany("Listing", "userId"),
+  }).identifier(["email"]),
+
   UserLibrary: a.model({
     id: a.id().required(),
-    user: a.belongsTo({ model: "User", targetName: "user" }),
-    books: a.hasMany({ model: "Book", targetName: "books" }),
+    userId: a.string().required(),
+    user: a.belongsTo("User", "userId"),
+    books: a.hasMany("Book", "id"),
+  }),
+
+  UserRating: a.model({
+    id: a.id().required(),
+    userId: a.string().required(),
+    user: a.belongsTo("User", "userId"),
+    ratedId: a.string().required(),
+    ratedUser: a.belongsTo("User", "ratedId"),
+    rating: a.integer().required(),
+    description: a.string(),
+  }),
+
+  Category: a.model({
+    id: a.id().required(),
+    name: a.string().required(),
+    books: a.hasMany("BookCategory", "CategoryId"),
+  }),
+
+  BookRating: a.model({
+    id: a.id().required(),
+    bookId: a.string().required(),
+    book: a.belongsTo("Book", "bookId"),
+    rating: a.integer().required(),
+    description: a.string(),
+  }),
+
+  Listing: a.model({
+    id: a.id().required(),
+    bookId: a.string().required(),
+    book: a.belongsTo("Book", "bookId"),
+    userId: a.string().required(),
+    user: a.belongsTo("User", "userId"),
+    price: a.float().required(),
+    photos: a.string().array().required(),
+  }),
+
+  Cart: a.model({
+    id: a.id().required(),
+    userId: a.string().required(),
+    user: a.belongsTo("User", "userId"),
+    listings: a.hasMany("Listing", "id"),
+    state: a.enum(["active", "completed", "shipping"]),
+  }),
+
+  Wishlist: a.model({
+    id: a.id().required(),
+    userId: a.string().required(),
+    user: a.belongsTo("User", "userId"),
+    books: a.hasMany("Book", "id"),
   })
-}).authorization((allow) => [allow.owner()]),
-;
+
+  
+}).authorization((allow) => [allow.owner()]);
 
 export type Schema = ClientSchema<typeof schema>;
 

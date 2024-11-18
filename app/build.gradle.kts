@@ -60,10 +60,18 @@ dependencies {
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 
+    implementation ("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.5.4")
+    implementation ("androidx.compose.runtime:runtime:1.5.4")
+
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.7.5")
+
 
 
     // Amplify support
     implementation("com.amplifyframework.ui:authenticator:1.4.0")
+    implementation("com.amplifyframework:aws-storage-s3:2.24.0")
+    implementation("com.amplifyframework:core-kotlin:2.24.0")
 
 
     implementation("com.amplifyframework:aws-api:2.24.0")

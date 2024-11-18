@@ -1,5 +1,4 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
-import { list } from "aws-amplify/storage";
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try

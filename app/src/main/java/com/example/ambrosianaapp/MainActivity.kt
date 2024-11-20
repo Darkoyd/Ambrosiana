@@ -1,5 +1,6 @@
 package com.example.ambrosianaapp
 
+import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
@@ -17,7 +18,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -30,7 +33,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.ambrosianaapp.auth.LoginActivity
+import com.example.ambrosianaapp.auth.SignUpActivity
+import com.example.ambrosianaapp.components.AmbrosianaButton
 import com.example.ambrosianaapp.ui.theme.AmbrosianaAppTheme
+import com.example.ambrosianaapp.ui.theme.AmbrosianaColor
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -49,10 +56,10 @@ class MainActivity : ComponentActivity() {
 
                 WelcomeScreen(
                     onLoginClick = {
-                        //startActivity(Intent(this, LoginActivity::class.java))
+                        startActivity(Intent(this, LoginActivity::class.java))
                     },
                     onSignUpClick = {
-                        //startActivity(Intent(this, SignUpActivity::class.java))
+                        startActivity(Intent(this, SignUpActivity::class.java))
                     },
                     isOnline = isOnline
                 )
@@ -61,46 +68,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-object AppColors {
-    val Secondary = Color(0xFFAAADC4)
-    val Grey = Color(0xFF8D909B)
-    val Primary = Color(0xFFD9F2B4)
-    val Green = Color(0xFF29524A)
-    val Black = Color(0xFF06070E)
-    val White = Color(0xFFFFFFFF)
-}
 
-@Composable
-fun AmbrosianaButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    text: String
-) {
-    Button(
-        onClick = onClick,
-        modifier = modifier
-            .height(48.dp)
-            .fillMaxWidth(0.7f),
-        enabled = enabled,
-        shape = RoundedCornerShape(24.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = AppColors.Green,
-            disabledContainerColor = AppColors.Grey
-        ),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 4.dp,
-            pressedElevation = 8.dp,
-            disabledElevation = 0.dp
-        )
-    ) {
-        Text(
-            text = text,
-            color = if (enabled) AppColors.White else AppColors.Secondary,
-            style = MaterialTheme.typography.headlineSmall
-        )
-    }
-}
+
 
 @Composable
 fun WelcomeScreen(
@@ -108,15 +77,17 @@ fun WelcomeScreen(
     onSignUpClick: () -> Unit,
     isOnline: Boolean
 ) {
+    val scrollState = rememberScrollState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Secondary)
+            .background(AmbrosianaColor.Details)
     ) {
         Header(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(AppColors.Primary)
+                .background(AmbrosianaColor.Primary)
                 .padding(32.dp)
         )
 
@@ -124,6 +95,7 @@ fun WelcomeScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
+                .verticalScroll(scrollState)
                 .padding(horizontal = 32.dp),
             onLoginClick = onLoginClick,
             onSignUpClick = onSignUpClick,
@@ -143,7 +115,7 @@ private fun Header(
         Text(
             text = "Welcome to Ambrosiana!",
             style = MaterialTheme.typography.displayMedium,
-            color = AppColors.Black
+            color = AmbrosianaColor.Black
         )
     }
 }
@@ -163,7 +135,7 @@ private fun MainContent(
         Text(
             text = "Log into the\nmarketplace...",
             style = MaterialTheme.typography.headlineLarge,
-            color = AppColors.Black
+            color = AmbrosianaColor.Black
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -180,7 +152,7 @@ private fun MainContent(
         Text(
             text = "Or sign up now!",
             style = MaterialTheme.typography.headlineLarge,
-            color = AppColors.Black
+            color = AmbrosianaColor.Black
         )
 
         Spacer(modifier = Modifier.height(8.dp))

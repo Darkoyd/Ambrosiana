@@ -25,6 +25,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".auth.LoginActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AmbrosianaApp"
+            android:windowSoftInputMode="adjustResize"
+            android:label="Login">
+        </activity>
+
+        <!-- Sign Up Activity -->
+        <activity
+            android:name=".auth.SignUpActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AmbrosianaApp"
+            android:windowSoftInputMode="adjustResize"
+            android:label="Sign Up">
+        </activity>
 
     </application>
 

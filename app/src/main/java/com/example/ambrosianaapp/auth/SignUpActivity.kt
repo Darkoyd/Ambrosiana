@@ -1,36 +1,50 @@
 package com.example.ambrosianaapp.auth
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.ambrosianaapp.R
+import com.example.ambrosianaapp.components.AmbrosianaButton
+import com.example.ambrosianaapp.components.AmbrosianaTextField
 import com.example.ambrosianaapp.ui.theme.AmbrosianaAppTheme
+import com.example.ambrosianaapp.ui.theme.AmbrosianaColor
 
 class SignUpActivity : ComponentActivity() {
     private val viewModel: SignUpViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             AmbrosianaAppTheme {
                 SignUpScreen(
@@ -55,95 +69,130 @@ fun SignUpScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(scrollState),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .background(AmbrosianaColor.Details)
+
     ) {
-        Text(
-            text = "Create Your Account",
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = 16.dp)
+        Header(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(AmbrosianaColor.Primary)
+                .padding(32.dp)
         )
 
+        Form(viewModel, onSignUpSuccess, modifier = Modifier.verticalScroll(scrollState))
+    }
+}
+
+@Composable
+private fun Form(
+    viewModel: SignUpViewModel,
+    onSignUpSuccess: () -> Unit,
+    modifier: Modifier
+) {
+
+    val showPassword = remember { mutableStateOf(false) }
+
+    Column (
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+
+        Spacer(modifier = Modifier.height(16.dp))
         // First Name TextField
-        OutlinedTextField(
+        AmbrosianaTextField(
             value = viewModel.firstName,
             onValueChange = { viewModel.firstName = it },
-            label = { Text("First Name") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            label = "First Name",
+            modifier = Modifier.padding(52.dp, 0.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Last Name TextField
-        OutlinedTextField(
+        AmbrosianaTextField(
             value = viewModel.lastName,
             onValueChange = { viewModel.lastName = it },
-            label = { Text("Last Name") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            label = "Last Name",
+            modifier = Modifier.padding(52.dp, 0.dp),
         )
 
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Email TextField
-        OutlinedTextField(
+        AmbrosianaTextField(
             value = viewModel.email,
             onValueChange = { viewModel.email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            label = "Email Address",
+            modifier = Modifier.padding(52.dp, 0.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Phone TextField
-        OutlinedTextField(
+        AmbrosianaTextField(
             value = viewModel.phone,
             onValueChange = { viewModel.phone = it },
-            label = { Text("Phone Number") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            placeholder = { Text("+1 (555) 123-4567") }
+            label = "Phone",
+            modifier = Modifier.padding(52.dp, 0.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Address TextField
-        OutlinedTextField(
+        AmbrosianaTextField(
             value = viewModel.address,
             onValueChange = { viewModel.address = it },
-            label = { Text("Address") },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 2,
-            maxLines = 3
+            label = "Address",
+            modifier = Modifier.padding(52.dp, 0.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Password TextField
-        OutlinedTextField(
+        AmbrosianaTextField(
             value = viewModel.password,
             onValueChange = { viewModel.password = it },
-            label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation()
+            label = "Password",
+            modifier = Modifier.padding(52.dp, 0.dp),
+            visualTransformation = if (showPassword.value) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
+            trailingIcon = {
+                IconButton(onClick = { showPassword.value = !showPassword.value }) {
+                    Icon(
+                        painter = painterResource(R.drawable.visibility_24px),
+                        contentDescription = "Toggle password visibility",
+                        tint = AmbrosianaColor.Green
+                    )
+                }
+            }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Confirm Password TextField
-        OutlinedTextField(
+        AmbrosianaTextField(
             value = viewModel.confirmPassword,
             onValueChange = { viewModel.confirmPassword = it },
-            label = { Text("Confirm Password") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation()
+            label = "Confirm Password",
+            modifier = Modifier.padding(52.dp, 0.dp),
+            visualTransformation = if (showPassword.value) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
+            trailingIcon = {
+                IconButton(onClick = { showPassword.value = !showPassword.value }) {
+                    Icon(
+                        painter = painterResource(R.drawable.visibility_24px),
+                        contentDescription = "Toggle password visibility",
+                        tint = AmbrosianaColor.Green
+                    )
+                }
+            }
         )
 
         // Error Message
@@ -157,20 +206,27 @@ fun SignUpScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+
         // Sign Up Button
-        Button(
+        AmbrosianaButton(
             onClick = { viewModel.signUp(onSignUpSuccess) },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !viewModel.isLoading
-        ) {
-            if (viewModel.isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            } else {
-                Text("Sign Up")
-            }
-        }
+            enabled = !viewModel.isLoading,
+            text = if (viewModel.isLoading) "Creating Account..." else "Sign Up"
+        )
     }
+}
+
+@Composable
+private fun Header(modifier: Modifier) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Text(
+            text = "Create Your Account",
+            style = MaterialTheme.typography.displayMedium,
+            color = AmbrosianaColor.Black
+        )
+    }
+
 }

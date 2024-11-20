@@ -64,7 +64,7 @@ dependencies {
     implementation ("androidx.compose.runtime:runtime-livedata:1.5.4")
     implementation ("androidx.compose.runtime:runtime:1.5.4")
 
-    implementation("androidx.compose.ui:ui-text-google-fonts:1.7.5")
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.5.4")
 
 
 

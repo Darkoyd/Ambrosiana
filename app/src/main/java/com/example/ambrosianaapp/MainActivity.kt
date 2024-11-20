@@ -30,20 +30,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.ambrosianaapp.ui.theme.AmbrosianaAppTheme
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
 class MainActivity : ComponentActivity() {
+    private val viewModel: MainViewModel by viewModels {
+        MainViewModelFactory(getSystemService(ConnectivityManager::class.java)!!)
+    }
 
-    class MainActivity : ComponentActivity() {
-        private val viewModel: MainViewModel by viewModels {
-            MainViewModelFactory(getSystemService(ConnectivityManager::class.java)!!)
-        }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            AmbrosianaAppTheme {
 
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-            setContent {
                 val isOnline by viewModel.isOnline.collectAsStateWithLifecycle()
 
                 WelcomeScreen(
@@ -141,7 +142,7 @@ private fun Header(
     ) {
         Text(
             text = "Welcome to Ambrosiana!",
-            style = MaterialTheme.typography.displayLarge,
+            style = MaterialTheme.typography.displayMedium,
             color = AppColors.Black
         )
     }
@@ -161,7 +162,7 @@ private fun MainContent(
     ) {
         Text(
             text = "Log into the\nmarketplace...",
-            style = MaterialTheme.typography.displaySmall,
+            style = MaterialTheme.typography.headlineLarge,
             color = AppColors.Black
         )
 
@@ -178,7 +179,7 @@ private fun MainContent(
 
         Text(
             text = "Or sign up now!",
-            style = MaterialTheme.typography.displaySmall,
+            style = MaterialTheme.typography.headlineLarge,
             color = AppColors.Black
         )
 

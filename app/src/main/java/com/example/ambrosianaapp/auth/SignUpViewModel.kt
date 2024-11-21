@@ -68,7 +68,7 @@ class SignUpViewModel(
                     errorMessage = it.localizedMessage ?: "Sign up failed"
                 }
 
-            val user = User.builder()
+            val user: User = User.builder()
                 .email(email)
                 .phone(phone)
                 .address(address)

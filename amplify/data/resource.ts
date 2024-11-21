@@ -15,7 +15,7 @@ const schema = a.schema({
   }),
 
   BookWishlist: a.model({
-    bookId: a.id().required(),
+    bookId: a.id(),
     wishlistId: a.id().required(),
     book: a.belongsTo("Book", "bookId"),
     list: a.belongsTo("Wishlist", "wishlistId")
@@ -42,14 +42,14 @@ const schema = a.schema({
   }),
 
   BookLibrary: a.model({
-    bookId: a.id().required(),
+    bookId: a.id(),
     libraryId: a.id().required(),
     book: a.belongsTo("Book", "bookId"),
     library: a.belongsTo("UserLibrary", "libraryId")
   }),
 
   BookCategory: a.model({
-    categoryId: a.string().required(),
+    categoryId: a.string(),
     bookId: a.string().required(),
     category: a.belongsTo("Category", "categoryId"),
     book: a.belongsTo("Book", "bookId"),

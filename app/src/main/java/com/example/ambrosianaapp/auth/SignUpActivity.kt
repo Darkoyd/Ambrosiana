@@ -1,30 +1,18 @@
 package com.example.ambrosianaapp.auth
 
+import android.content.Intent
 import android.os.Bundle
-import android.view.WindowManager
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -32,10 +20,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.ambrosianaapp.R
 import com.example.ambrosianaapp.components.AmbrosianaButton
 import com.example.ambrosianaapp.components.AmbrosianaTextField
+import com.example.ambrosianaapp.library.LibraryActivity
 import com.example.ambrosianaapp.ui.theme.AmbrosianaAppTheme
 import com.example.ambrosianaapp.ui.theme.AmbrosianaColor
 
@@ -50,7 +40,11 @@ class SignUpActivity : ComponentActivity() {
                 SignUpScreen(
                     viewModel = viewModel,
                     onSignUpSuccess = {
-                        // Navigate to confirmation screen or main app
+                        Log.d("SignUpActivity", "SignUp success callback triggered")
+                        val intent = Intent(this, LibraryActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        }
+                        startActivity(intent)
                         finish()
                     }
                 )
@@ -70,35 +64,111 @@ fun SignUpScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(AmbrosianaColor.Details)
-
     ) {
         Header(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(AmbrosianaColor.Primary)
-                .padding(32.dp)
+                .padding(32.dp),
+            state = viewModel.currentState
         )
 
-        Form(viewModel, onSignUpSuccess, modifier = Modifier.verticalScroll(scrollState))
+        when (viewModel.currentState) {
+            SignUpState.WaitingForConfirmation -> ConfirmationForm(viewModel, onSignUpSuccess)
+            else -> SignUpForm(viewModel, modifier = Modifier.verticalScroll(scrollState))
+        }
     }
 }
 
 @Composable
-private fun Form(
+private fun Header(modifier: Modifier, state: SignUpState) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Text(
+            text = when (state) {
+                SignUpState.WaitingForConfirmation -> "Confirm Your Email"
+                else -> "Create Your Account"
+            },
+            style = MaterialTheme.typography.displayMedium,
+            color = AmbrosianaColor.Black
+        )
+    }
+}
+
+@Composable
+private fun ConfirmationForm(
     viewModel: SignUpViewModel,
-    onSignUpSuccess: () -> Unit,
+    onConfirmationSuccess: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text(
+            text = "We've sent a confirmation code to ${viewModel.email}",
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 32.dp)
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        AmbrosianaTextField(
+            value = viewModel.confirmationCode,
+            onValueChange = { viewModel.confirmationCode = it },
+            label = "Confirmation Code",
+            modifier = Modifier.padding(52.dp, 0.dp),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            )
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Error message for confirmation
+        when (viewModel.currentState) {
+            is SignUpState.Error -> {
+                Text(
+                    text = (viewModel.currentState as SignUpState.Error).message,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
+            else -> {}
+        }
+
+        AmbrosianaButton(
+            onClick = { viewModel.confirmSignUp(onConfirmationSuccess) },
+            enabled = viewModel.currentState !is SignUpState.Loading,
+            text = if (viewModel.currentState is SignUpState.Loading) "Confirming..." else "Confirm Email"
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+    }
+}
+
+@Composable
+private fun SignUpForm(
+    viewModel: SignUpViewModel,
     modifier: Modifier
 ) {
-
     val showPassword = remember { mutableStateOf(false) }
 
-    Column (
+    Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-
         Spacer(modifier = Modifier.height(16.dp))
-        // First Name TextField
+
+        // Existing form fields...
         AmbrosianaTextField(
             value = viewModel.firstName,
             onValueChange = { viewModel.firstName = it },
@@ -108,7 +178,6 @@ private fun Form(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Last Name TextField
         AmbrosianaTextField(
             value = viewModel.lastName,
             onValueChange = { viewModel.lastName = it },
@@ -116,10 +185,8 @@ private fun Form(
             modifier = Modifier.padding(52.dp, 0.dp),
         )
 
-
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Email TextField
         AmbrosianaTextField(
             value = viewModel.email,
             onValueChange = { viewModel.email = it },
@@ -129,7 +196,6 @@ private fun Form(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Phone TextField
         AmbrosianaTextField(
             value = viewModel.phone,
             onValueChange = { viewModel.phone = it },
@@ -139,7 +205,6 @@ private fun Form(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Address TextField
         AmbrosianaTextField(
             value = viewModel.address,
             onValueChange = { viewModel.address = it },
@@ -149,7 +214,6 @@ private fun Form(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Password TextField
         AmbrosianaTextField(
             value = viewModel.password,
             onValueChange = { viewModel.password = it },
@@ -173,7 +237,6 @@ private fun Form(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Confirm Password TextField
         AmbrosianaTextField(
             value = viewModel.confirmPassword,
             onValueChange = { viewModel.confirmPassword = it },
@@ -195,38 +258,24 @@ private fun Form(
             }
         )
 
-        // Error Message
-        viewModel.errorMessage?.let { error ->
-            Text(
-                text = error,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
+        // Error message
+        when (viewModel.currentState) {
+            is SignUpState.Error -> {
+                Text(
+                    text = (viewModel.currentState as SignUpState.Error).message,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
+            else -> {}
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-
-        // Sign Up Button
         AmbrosianaButton(
-            onClick = { viewModel.signUp(onSignUpSuccess) },
-            enabled = !viewModel.isLoading,
-            text = if (viewModel.isLoading) "Creating Account..." else "Sign Up"
+            onClick = { viewModel.signUp() },
+            enabled = viewModel.currentState !is SignUpState.Loading,
+            text = if (viewModel.currentState is SignUpState.Loading) "Creating Account..." else "Sign Up"
         )
     }
-}
-
-@Composable
-private fun Header(modifier: Modifier) {
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.CenterStart
-    ) {
-        Text(
-            text = "Create Your Account",
-            style = MaterialTheme.typography.displayMedium,
-            color = AmbrosianaColor.Black
-        )
-    }
-
 }

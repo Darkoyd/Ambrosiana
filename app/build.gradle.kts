@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.androidx.espresso.core)
     implementation(libs.androidx.transition)
     implementation(libs.androidx.lifecycle.runtime.compose.android)
+    implementation(libs.suggestions)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

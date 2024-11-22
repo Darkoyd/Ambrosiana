@@ -48,9 +48,10 @@ fun LoginScreenErrorPreview() {
     }
 }
 
+// SignUp Screen Previews
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
-fun SignUpScreenDefaultPreview() {
+fun SignUpScreenInitialPreview() {
     AmbrosianaAppTheme {
         SignUpScreen(
             viewModel = SignUpViewModel().apply {
@@ -62,6 +63,7 @@ fun SignUpScreenDefaultPreview() {
                 address = "123 Main St, City, Country"
                 phone = "+1 (555) 123-4567"
                 confirmPassword = "password123"
+                currentState = SignUpState.Initial
             },
             onSignUpSuccess = {}
         )
@@ -82,7 +84,7 @@ fun SignUpScreenLoadingPreview() {
                 address = "123 Main St, City, Country"
                 phone = "+1 (555) 123-4567"
                 confirmPassword = "password123"
-                isLoading = true
+                currentState = SignUpState.Loading
             },
             onSignUpSuccess = {}
         )
@@ -103,7 +105,51 @@ fun SignUpScreenErrorPreview() {
                 address = "123 Main St, City, Country"
                 phone = "+1 (555) 123-4567"
                 confirmPassword = "different_password"
-                errorMessage = "Passwords do not match"
+                currentState = SignUpState.Error("Passwords do not match")
+            },
+            onSignUpSuccess = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 640)
+@Composable
+fun SignUpScreenConfirmationPreview() {
+    AmbrosianaAppTheme {
+        SignUpScreen(
+            viewModel = SignUpViewModel().apply {
+                email = "user@example.com"
+                password = "password123"
+                username = "johnsmith"
+                firstName = "John"
+                lastName = "Smith"
+                address = "123 Main St, City, Country"
+                phone = "+1 (555) 123-4567"
+                confirmPassword = "password123"
+                confirmationCode = "123456"
+                currentState = SignUpState.WaitingForConfirmation
+            },
+            onSignUpSuccess = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 640)
+@Composable
+fun SignUpScreenConfirmationErrorPreview() {
+    AmbrosianaAppTheme {
+        SignUpScreen(
+            viewModel = SignUpViewModel().apply {
+                email = "user@example.com"
+                password = "password123"
+                username = "johnsmith"
+                firstName = "John"
+                lastName = "Smith"
+                address = "123 Main St, City, Country"
+                phone = "+1 (555) 123-4567"
+                confirmPassword = "password123"
+                confirmationCode = "123456"
+                currentState = SignUpState.Error("Invalid confirmation code")
             },
             onSignUpSuccess = {}
         )

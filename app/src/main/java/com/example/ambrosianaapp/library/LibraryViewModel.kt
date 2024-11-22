@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 
 class LibraryViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow<LibraryUiState>(LibraryUiState.Loading)
+    val _uiState = MutableStateFlow<LibraryUiState>(LibraryUiState.Loading)
     val uiState: StateFlow<LibraryUiState> = _uiState.asStateFlow()
 
     private var lastBookId: String? = null
@@ -43,22 +43,34 @@ class LibraryViewModel : ViewModel() {
                 }
 
                 val userId = getCurrentUserId()
-                val library = fetchUserLibrary(userId)
-                val books = fetchBooksForLibrary(library.id)
+                Log.d("LibraryViewModel", "Fetching library for user: $userId")
 
-                //handleLibraryResult(books)
+                // First, try to get the user's library
+                var userLibrary = fetchUserLibrary(userId)
+
+
+                // Now fetch books for the library
+                val books = userLibrary?.let { fetchBooksForLibrary(it.id) }
+
+                // Set initial state if no books
+                if (books.isNullOrEmpty()) {
+                    _uiState.value = LibraryUiState.Empty
+                } else {
+                    Log.d("LibraryViewModel", "Fetched books!: $books")
+
+//                    _uiState.value = LibraryUiState.Success(
+//                        books = books,
+//                        isLoadingMore = false,
+//                        canLoadMore = books.size >= pageSize
+//                    )
+                }
+
             } catch (e: Exception) {
                 handleError(e)
                 Log.e("LibraryViewModel", "Failed to load library", e)
             } finally {
                 isLoading = false
             }
-        }
-    }
-
-    fun loadMore() {
-        if (!isLoading && lastBookId != null) {
-            loadLibrary()
         }
     }
 
@@ -71,9 +83,10 @@ class LibraryViewModel : ViewModel() {
             }
         }
 
-    private suspend fun fetchUserLibrary(userId: String): UserLibrary =
+    private suspend fun fetchUserLibrary(userId: String): UserLibrary? =
         supervisorScope {
             try {
+                Log.d("LibraryViewModel", "Querying for library with userId: $userId")
                 val response = Amplify.API.query(
                     ModelQuery.list(
                         UserLibrary::class.java,
@@ -81,15 +94,21 @@ class LibraryViewModel : ViewModel() {
                     )
                 )
 
-                response.data.firstOrNull()
-                    ?: throw IOException("Library not found")
+                val library = response.data.firstOrNull()
+                if (library != null) {
+                    Log.d("LibraryViewModel", "Found library with id: ${library.id}")
+                } else {
+                    Log.d("LibraryViewModel", "No library found for user")
+                }
+
+                library
             } catch (e: ApiException) {
                 Log.e("LibraryViewModel", "Query failed", e)
                 throw IOException("Failed to fetch library", e)
             }
         }
 
-    private suspend fun fetchBooksForLibrary(libraryId: String) =
+    private suspend fun fetchBooksForLibrary(libraryId: String): List<BookLibrary>? =
         supervisorScope {
             try {
                 val response = Amplify.API.query(
@@ -98,16 +117,16 @@ class LibraryViewModel : ViewModel() {
                         libraryId
                     ) { libraryPath ->
                         includes(
-                            libraryPath.books.book
+                            libraryPath.books.book.author,
+                            libraryPath.books.book.categories.category,
+                            libraryPath.books.book.ratings
                         )
                     }
                 )
-                val books = (response.data.books as? LoadedModelList<BookLibrary>)?.items
-                books?.map{
-                    Log.println(Log.INFO, "AmbrosianaApp", "Book:" + it.book.toString())
-                }
 
-
+                val books = (response.data.books as? LoadedModelList<BookLibrary>)?.items?.toList()
+                Log.d("LibraryViewModel", "Fetched ${books?.size ?: 0} books for library")
+                books
 
             } catch (e: ApiException) {
                 Log.e("LibraryViewModel", "Query failed", e)
@@ -115,34 +134,10 @@ class LibraryViewModel : ViewModel() {
             }
         }
 
-//    private fun handleLibraryResult(books: List<BookLibrary>?) {
-//        val newBooks = books?.map { it.book.toUi }
-//
-//        if (newBooks != null) {
-//            if (newBooks.isEmpty() && _uiState.value is LibraryUiState.Loading) {
-//                _uiState.value = LibraryUiState.Empty
-//                return
-//            }
-//        }
-//
-//        val currentBooks = if (_uiState.value is LibraryUiState.Success) {
-//            (_uiState.value as LibraryUiState.Success).books
-//        } else {
-//            emptyList()
-//        }
-//
-//        _uiState.value = LibraryUiState.Success(
-//            books = currentBooks + newBooks,
-//            isLoadingMore = false,
-//            canLoadMore = books.size == pageSize
-//        )
-//    }
 
-    private fun updateLoadingMore(isLoadingMore: Boolean) {
-        if (_uiState.value is LibraryUiState.Success) {
-            _uiState.value = (_uiState.value as LibraryUiState.Success).copy(
-                isLoadingMore = isLoadingMore
-            )
+    fun loadMore() {
+        if (!isLoading && lastBookId != null) {
+            loadLibrary()
         }
     }
 
@@ -160,16 +155,11 @@ class LibraryViewModel : ViewModel() {
         }
     }
 
-//    private fun Book.toUiModel() = BookUiModel(
-//        id = id,
-//        title = title,
-//        author = AuthorUiModel(
-//            id = author.id,
-//            name = author.name
-//        ),
-//        isbn = isbn,
-//        categories = categories.map { it.category.name },
-//        rating = ratings.map { it.rating }.average().takeIf { !it.isNaN() }?.toFloat(),
-//        isListed = listings.isNotEmpty()
-//    )
+    private fun updateLoadingMore(isLoadingMore: Boolean) {
+        if (_uiState.value is LibraryUiState.Success) {
+            _uiState.value = (_uiState.value as LibraryUiState.Success).copy(
+                isLoadingMore = isLoadingMore
+            )
+        }
+    }
 }

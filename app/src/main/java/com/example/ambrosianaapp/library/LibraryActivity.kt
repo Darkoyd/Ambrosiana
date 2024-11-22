@@ -1,8 +1,10 @@
 package com.example.ambrosianaapp.library
 
 import AmbrosianaBottomNavigation
-import android.content.Intent
-import android.util.Log
+import android.content.res.Configuration
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -10,7 +12,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
@@ -22,14 +24,36 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.ambrosianaapp.ui.theme.AmbrosianaAppTheme
 import com.example.ambrosianaapp.ui.theme.AmbrosianaColor
 import com.example.ambrosianaapp.ui.theme.AppFont
+import androidx.activity.viewModels
+
 
 data class Book(
     val title: String,
     val author: String,
     val category: String
 )
+
+class LibraryActivity : ComponentActivity() {
+    private val viewModel: LibraryViewModel by viewModels()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            AmbrosianaAppTheme {
+                LibraryView(
+                    viewModel = viewModel,
+                    onBookClick = { book ->
+                        // We'll implement navigation to book details later
+                    },
+                    isExpanded = false // You might want to control this state
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun LibraryView(
@@ -294,7 +318,7 @@ fun BookCard(
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowForward,
+                        imageVector = Icons.AutoMirrored.Default.ArrowForward,
                         contentDescription = "View details",
                         modifier = Modifier.size(16.dp)
                     )
@@ -336,13 +360,131 @@ private fun BookCardSkeleton() {
     }
 }
 
-@Composable
-@Preview
-fun LibraryScreenPreview() {
-    LibraryView(
-        onBookClick = {},
-        isExpanded = false,
-        viewModel = TODO(),
-        modifier = TODO()
+private val previewBooks = listOf(
+    BookUiModel(
+        id = "1",
+        title = "The Great Gatsby",
+        author = AuthorUiModel("1", "F. Scott Fitzgerald"),
+        isbn = "978-0743273565",
+        categories = listOf("Fiction", "Classic Literature"),
+        rating = 4.5f,
+        isListed = true
+    ),
+    BookUiModel(
+        id = "2",
+        title = "1984",
+        author = AuthorUiModel("2", "George Orwell"),
+        isbn = "978-0451524935",
+        categories = listOf("Science Fiction", "Dystopian"),
+        rating = 4.8f,
+        isListed = false
+    ),
+    BookUiModel(
+        id = "3",
+        title = "Pride and Prejudice",
+        author = AuthorUiModel("3", "Jane Austen"),
+        isbn = "978-0141439518",
+        categories = listOf("Romance", "Classic Literature"),
+        rating = 4.7f,
+        isListed = false
+    ),
+    BookUiModel(
+        id = "4",
+        title = "The Hobbit",
+        author = AuthorUiModel("4", "J.R.R. Tolkien"),
+        isbn = "978-0547928227",
+        categories = listOf("Fantasy", "Adventure"),
+        rating = 4.9f,
+        isListed = true
     )
+)
+
+
+@Preview(name = "Loading State")
+@Composable
+private fun LibraryViewLoadingPreview() {
+    AmbrosianaAppTheme {
+        LibraryView(
+            viewModel = LibraryViewModel().apply {
+                _uiState.value = LibraryUiState.Loading
+            },
+            onBookClick = {},
+            isExpanded = false
+        )
+    }
+}
+
+@Preview(name = "Success State")
+@Composable
+private fun LibraryViewSuccessPreview() {
+    AmbrosianaAppTheme {
+        LibraryView(
+            viewModel = LibraryViewModel().apply {
+                _uiState.value = LibraryUiState.Success(
+                    books = previewBooks,
+                    isLoadingMore = false,
+                    canLoadMore = true
+                )
+            },
+            onBookClick = {},
+            isExpanded = false
+        )
+    }
+}
+
+@Preview(name = "Empty State")
+@Composable
+private fun LibraryViewEmptyPreview() {
+    AmbrosianaAppTheme {
+        LibraryView(
+            viewModel = LibraryViewModel().apply {
+                _uiState.value = LibraryUiState.Empty
+            },
+            onBookClick = {},
+            isExpanded = false
+        )
+    }
+}
+
+@Preview(name = "Error State")
+@Composable
+private fun LibraryViewErrorPreview() {
+    AmbrosianaAppTheme {
+        LibraryView(
+            viewModel = LibraryViewModel().apply {
+                _uiState.value = LibraryUiState.Error.Network { }
+            },
+            onBookClick = {},
+            isExpanded = false
+        )
+    }
+}
+
+@Preview(
+    name = "Library View - Light Theme",
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
+    showBackground = true
+)
+@Preview(
+    name = "Library View - Dark Theme",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    showBackground = true
+)
+
+
+@Composable
+private fun LibraryViewThemePreview() {
+    AmbrosianaAppTheme {
+        LibraryView(
+            viewModel = LibraryViewModel().apply {
+                _uiState.value = LibraryUiState.Success(
+                    books = previewBooks,
+                    isLoadingMore = false,
+                    canLoadMore = true
+                )
+            },
+            onBookClick = {},
+            isExpanded = false
+        )
+    }
 }

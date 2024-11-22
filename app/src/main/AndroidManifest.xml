@@ -41,6 +41,13 @@
             android:windowSoftInputMode="adjustResize"
             android:label="Sign Up">
         </activity>
+        <activity
+            android:name=".library.LibraryActivity"
+            android:exported="false"
+            android:label="Library"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.AmbrosianaApp">
+        </activity>
 
     </application>
 

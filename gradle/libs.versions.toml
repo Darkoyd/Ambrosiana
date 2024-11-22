@@ -12,6 +12,7 @@ media3CommonKtx = "1.4.1"
 playServicesFonts = "2023.1.0"
 transition = "1.0.0"
 lifecycleRuntimeComposeAndroid = "2.8.7"
+suggestions = "1.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -32,6 +33,7 @@ androidx-media3-common-ktx = { group = "androidx.media3", name = "media3-common-
 play-services-fonts = { module = "com.google.android.gms:play-services-fonts", version.ref = "playServicesFonts" }
 androidx-transition = { group = "androidx.transition", name = "transition", version.ref = "transition" }
 androidx-lifecycle-runtime-compose-android = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose-android", version.ref = "lifecycleRuntimeComposeAndroid" }
+suggestions = { group = "com.google.assistant.appactions", name = "suggestions", version.ref = "suggestions" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

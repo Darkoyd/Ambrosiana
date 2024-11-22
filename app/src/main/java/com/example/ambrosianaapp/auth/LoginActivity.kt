@@ -1,6 +1,8 @@
 package com.example.ambrosianaapp.auth
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -34,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import com.example.ambrosianaapp.R
 import com.example.ambrosianaapp.components.AmbrosianaButton
 import com.example.ambrosianaapp.components.AmbrosianaTextField
+import com.example.ambrosianaapp.library.LibraryActivity
 import com.example.ambrosianaapp.ui.theme.AmbrosianaAppTheme
 import com.example.ambrosianaapp.ui.theme.AmbrosianaColor
 
@@ -47,7 +50,11 @@ class LoginActivity : ComponentActivity() {
                 LoginScreen(
                     viewModel = viewModel,
                     onLoginSuccess = {
-                        // Navigate to main app or dashboard
+                        Log.d("SignUpActivity", "SignUp success callback triggered")
+                        val intent = Intent(this, LibraryActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        }
+                        startActivity(intent)
                         finish()
                     }
                 )

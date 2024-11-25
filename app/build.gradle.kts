@@ -77,6 +77,8 @@ dependencies {
     implementation("com.amplifyframework.ui:authenticator:1.4.0")
     implementation("com.amplifyframework:aws-storage-s3:2.24.0")
     implementation("com.amplifyframework:core-kotlin:2.24.0")
+    implementation("com.amplifyframework:aws-analytics-pinpoint:2.24.0")
+
 
 
     implementation("com.amplifyframework:aws-api:2.24.0")

@@ -18,6 +18,7 @@ class AmbrosianaApp: Application() {
             Amplify.addPlugin(AWSCognitoAuthPlugin())
             Amplify.addPlugin(AWSApiPlugin())
             Amplify.addPlugin(AWSS3StoragePlugin())
+            Amplify.addPlugin(new AWSPinpointAnalyticsPlugin());
 
 
             Amplify.configure(AmplifyOutputs(R.raw.amplify_outputs), applicationContext)

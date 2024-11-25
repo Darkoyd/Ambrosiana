@@ -208,15 +208,6 @@ fun BookCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val ratingText = remember(book.rating) {
-        book.rating?.let { "%.1f★".format(it) }
-    }
-
-    val categoriesText = remember(book.categories) {
-        book.categories.take(2).joinToString(", ") +
-                if (book.categories.size > 2) "..." else ""
-    }
-
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -240,9 +231,9 @@ fun BookCard(
                 text = book.title,
                 style = AppFont.typography.titleMedium,
                 color = AmbrosianaColor.Black,
-                maxLines = 2,
+//                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f)
+//                modifier = Modifier.weight(1f)
             )
 
             // Author
@@ -265,32 +256,16 @@ fun BookCard(
                     modifier = Modifier.weight(1f)
                 )
             }
-
-            // Categories and Rating
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Row (
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // Categories
                 Text(
-                    text = categoriesText,
-                    style = AppFont.typography.labelSmall,
-                    color = AmbrosianaColor.Black.copy(alpha = 0.7f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false)
+                    text = book.isbn
                 )
-
-                // Rating
-                if (ratingText != null) {
-                    Text(
-                        text = ratingText,
-                        style = AppFont.typography.labelMedium,
-                        color = AmbrosianaColor.Green
-                    )
-                }
             }
+
+
 
             // Action buttons
             Row(
@@ -366,8 +341,6 @@ private val previewBooks = listOf(
         title = "The Great Gatsby",
         author = AuthorUiModel("1", "F. Scott Fitzgerald"),
         isbn = "978-0743273565",
-        categories = listOf("Fiction", "Classic Literature"),
-        rating = 4.5f,
         isListed = true
     ),
     BookUiModel(
@@ -375,8 +348,6 @@ private val previewBooks = listOf(
         title = "1984",
         author = AuthorUiModel("2", "George Orwell"),
         isbn = "978-0451524935",
-        categories = listOf("Science Fiction", "Dystopian"),
-        rating = 4.8f,
         isListed = false
     ),
     BookUiModel(
@@ -384,8 +355,6 @@ private val previewBooks = listOf(
         title = "Pride and Prejudice",
         author = AuthorUiModel("3", "Jane Austen"),
         isbn = "978-0141439518",
-        categories = listOf("Romance", "Classic Literature"),
-        rating = 4.7f,
         isListed = false
     ),
     BookUiModel(
@@ -393,8 +362,6 @@ private val previewBooks = listOf(
         title = "The Hobbit",
         author = AuthorUiModel("4", "J.R.R. Tolkien"),
         isbn = "978-0547928227",
-        categories = listOf("Fantasy", "Adventure"),
-        rating = 4.9f,
         isListed = true
     )
 )

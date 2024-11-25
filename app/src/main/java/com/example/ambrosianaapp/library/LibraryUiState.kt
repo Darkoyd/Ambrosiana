@@ -8,8 +8,6 @@ data class BookUiModel(
     val title: String,
     val author: AuthorUiModel,
     val isbn: String,
-    val categories: List<String>,
-    val rating: Float? = null,
     val isListed: Boolean = false
 )
 

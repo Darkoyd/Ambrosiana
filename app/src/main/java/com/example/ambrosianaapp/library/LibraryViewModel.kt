@@ -4,9 +4,11 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import aws.smithy.kotlin.runtime.io.IOException
+import com.amplifyframework.annotations.InternalAmplifyApi
 import com.amplifyframework.api.ApiException
 import com.amplifyframework.api.graphql.model.ModelQuery
 import com.amplifyframework.core.model.LoadedModelList
+import com.amplifyframework.core.model.LoadedModelReference
 import com.amplifyframework.core.model.includes
 import com.amplifyframework.datastore.generated.model.BookLibrary
 import com.amplifyframework.datastore.generated.model.UserLibrary
@@ -34,6 +36,7 @@ class LibraryViewModel : ViewModel() {
         loadLibrary()
     }
 
+    @OptIn(InternalAmplifyApi::class)
     private fun loadLibrary() {
         if (isLoading) return
 
@@ -66,15 +69,32 @@ class LibraryViewModel : ViewModel() {
                     Log.d(TAG, "Fetched ${books.size} books")
                     val bookUiModels = books.mapNotNull { bookLibrary ->
                         bookLibrary.book?.let { book ->
-                            Log.d(TAG, "$book")
+                            val bookx = (book as LoadedModelReference).value
+                            val authorx = (bookx?.author as LoadedModelReference).value
+                            Log.d(TAG, "Book: $bookx")
+                            bookx.let {
+                                authorx?.let { it1 ->
+                                    AuthorUiModel(
+                                        id = it1.id,
+                                        name = authorx.name
+                                    )
+                                }?.let { it2 ->
+                                    BookUiModel(
+                                        id = it.id,
+                                        title = it.title,
+                                        author = it2,
+                                        isbn = it.isbn,
+                                    )
+                                }
+                            }
                         }
                     }
 
-//                    _uiState.value = LibraryUiState.Success(
-//                        books = bookUiModels,
-//                        isLoadingMore = false,
-//                        canLoadMore = bookUiModels.size >= pageSize
-//                    )
+                    _uiState.value = LibraryUiState.Success(
+                        books = bookUiModels,
+                        isLoadingMore = false,
+                        canLoadMore = bookUiModels.size >= pageSize
+                    )
                 }
 
             } catch (e: Exception) {
@@ -86,14 +106,6 @@ class LibraryViewModel : ViewModel() {
         }
     }
 
-    private suspend fun getCurrentUserId(): String =
-        supervisorScope {
-            try {
-                Amplify.Auth.getCurrentUser().userId
-            } catch (e: Exception) {
-                throw IOException("Failed to get current user", e)
-            }
-        }
 
     private suspend fun fetchUserLibrary(userId: String): UserLibrary? =
         supervisorScope {

@@ -26,7 +26,7 @@ import static com.amplifyframework.core.model.query.predicate.QueryField.field;
 /** This is an auto generated class representing the Listing type in your schema. */
 @SuppressWarnings("all")
 @ModelConfig(pluralName = "Listings", type = Model.Type.USER, version = 1, authRules = {
-  @AuthRule(allow = AuthStrategy.PUBLIC, provider = "apiKey", operations = { ModelOperation.READ }),
+  @AuthRule(allow = AuthStrategy.PRIVATE, operations = { ModelOperation.READ }),
   @AuthRule(allow = AuthStrategy.OWNER, ownerField = "owner", identityClaim = "cognito:username", provider = "userPools", operations = { ModelOperation.CREATE, ModelOperation.UPDATE, ModelOperation.DELETE })
 }, hasLazySupport = true)
 @Index(name = "undefined", fields = {"id"})

@@ -7,7 +7,7 @@ const schema = a.schema({
     user: a.belongsTo("User", "userId"),
     books: a.hasMany("BookWishlist", "wishlistId")
   }).authorization(allow => [
-    allow.publicApiKey().to(['read']),
+    allow.authenticated().to(['read']),
     allow.owner().to(['create', 'update', 'delete'])
   ]),
 
@@ -17,7 +17,7 @@ const schema = a.schema({
     book: a.belongsTo("Book", "bookId"),
     list: a.belongsTo("Wishlist", "wishlistId")
   }).authorization(allow => [
-    allow.publicApiKey().to(['read']),
+    allow.authenticated().to(['read']),
     allow.owner().to(['create', 'update', 'delete'])
   ]),
 
@@ -33,7 +33,7 @@ const schema = a.schema({
     wishlists: a.hasMany("BookWishlist", "bookId"),
     libraries: a.hasMany("BookLibrary", "bookId")
   }).authorization(allow => [
-    allow.publicApiKey().to(['read']),
+    allow.authenticated().to(['read']),
     allow.owner().to(['create', 'update', 'delete'])
   ]).secondaryIndexes((index) => [index("isbn")]),
 
@@ -43,7 +43,7 @@ const schema = a.schema({
     user: a.belongsTo("User", "userId"),
     books: a.hasMany("BookLibrary", "libraryId"),
   }).authorization(allow => [
-    allow.publicApiKey().to(['read']),
+    allow.authenticated().to(['read']),
     allow.owner().to(['create', 'update', 'delete'])
   ]),
 
@@ -53,7 +53,7 @@ const schema = a.schema({
     book: a.belongsTo("Book", "bookId"),
     library: a.belongsTo("UserLibrary", "libraryId")
   }).authorization(allow => [
-    allow.publicApiKey().to(['read']),
+    allow.authenticated().to(['read']),
     allow.owner().to(['create', 'update', 'delete'])
   ]),
 
@@ -63,7 +63,7 @@ const schema = a.schema({
     category: a.belongsTo("Category", "categoryId"),
     book: a.belongsTo("Book", "bookId"),
   }).authorization(allow => [
-    allow.publicApiKey().to(['read']),
+    allow.authenticated().to(['read']),
     allow.owner().to(['create', 'update', 'delete'])
   ]),
   Author: a.model({
@@ -71,7 +71,7 @@ const schema = a.schema({
     name: a.string().required(),
     books: a.hasMany("Book", "authorId"),
   }).authorization(allow => [
-    allow.publicApiKey().to(['read']),
+    allow.authenticated().to(['read']),
     allow.owner().to(['create', 'update', 'delete'])
   ]),
 
@@ -88,7 +88,7 @@ const schema = a.schema({
     wishlist: a.hasOne("Wishlist", "userId"),
     cart: a.hasOne("Cart", "userId")
   }).authorization(allow => [
-    allow.publicApiKey().to(['read']),
+    allow.authenticated().to(['read']),
     allow.owner().to(['create', 'update', 'delete'])
   ]).identifier(["email"]),
 
@@ -101,7 +101,7 @@ const schema = a.schema({
     rating: a.integer().required(),
     description: a.string(),
   }).authorization(allow => [
-    allow.publicApiKey().to(['read']),
+    allow.authenticated().to(['read']),
     allow.owner().to(['create', 'update', 'delete'])
   ]),
 
@@ -110,7 +110,7 @@ const schema = a.schema({
     name: a.string().required(),
     books: a.hasMany("BookCategory", "categoryId"),
   }).authorization(allow => [
-    allow.publicApiKey().to(['read']),
+    allow.authenticated().to(['read']),
     allow.owner().to(['create', 'update', 'delete'])
   ]),
 
@@ -121,7 +121,7 @@ const schema = a.schema({
     rating: a.integer().required(),
     description: a.string(),
   }).authorization(allow => [
-    allow.publicApiKey().to(['read']),
+    allow.authenticated().to(['read']),
     allow.owner().to(['create', 'update', 'delete'])
   ]),
 
@@ -137,7 +137,7 @@ const schema = a.schema({
     cartId: a.id(),
     cart: a.belongsTo("Cart", "cartId")
   }).authorization(allow => [
-    allow.publicApiKey().to(['read']),
+    allow.authenticated().to(['read']),
     allow.owner().to(['create', 'update', 'delete'])
   ]),
   Cart: a.model({
@@ -147,7 +147,7 @@ const schema = a.schema({
     listings: a.hasMany("Listing", "cartId"),
     state: a.enum(["active", "completed", "shipping"]),
   }).authorization(allow => [
-    allow.publicApiKey().to(['read']),
+    allow.authenticated().to(['read']),
     allow.owner().to(['create', 'update', 'delete'])
   ]),
 });

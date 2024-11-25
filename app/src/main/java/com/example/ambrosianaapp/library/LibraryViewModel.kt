@@ -19,6 +19,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 
 class LibraryViewModel : ViewModel() {
+    companion object {
+        private const val TAG = "LibraryViewModel"
+    }
+
     val _uiState = MutableStateFlow<LibraryUiState>(LibraryUiState.Loading)
     val uiState: StateFlow<LibraryUiState> = _uiState.asStateFlow()
 
@@ -43,42 +47,58 @@ class LibraryViewModel : ViewModel() {
                 }
 
                 val userId = Amplify.Auth.fetchUserAttributes()[0].value
-                Log.d("LibraryViewModel", "Fetching library for user: $userId")
+                Log.d(TAG, "Fetching library for user: $userId")
 
                 // First, try to get the user's library
                 val userLibrary = fetchUserLibrary(userId)
-
+                if (userLibrary == null) {
+                    Log.e(TAG, "User library not found for userId: $userId")
+                    _uiState.value = LibraryUiState.Empty
+                    return@launch
+                }
 
                 // Now fetch books for the library
-                val books = userLibrary?.let { fetchBooksForLibrary(it.id) }
-
-                // Set initial state if no books
+                val books = fetchBooksForLibrary(userLibrary.id)
                 if (books.isNullOrEmpty()) {
+                    Log.d(TAG, "No books found in library")
                     _uiState.value = LibraryUiState.Empty
                 } else {
-                    Log.d("LibraryViewModel", "Fetched books!: $books")
+                    Log.d(TAG, "Fetched ${books.size} books")
+                    val bookUiModels = books.mapNotNull { bookLibrary ->
+                        bookLibrary.book?.let { book ->
+                            Log.d(TAG, "$book")
+                        }
+                    }
 
 //                    _uiState.value = LibraryUiState.Success(
-//                        books = books,
+//                        books = bookUiModels,
 //                        isLoadingMore = false,
-//                        canLoadMore = books.size >= pageSize
+//                        canLoadMore = bookUiModels.size >= pageSize
 //                    )
                 }
 
             } catch (e: Exception) {
                 handleError(e)
-                Log.e("LibraryViewModel", "Failed to load library", e)
+                Log.e(TAG, "Failed to load library", e)
             } finally {
                 isLoading = false
             }
         }
     }
 
+    private suspend fun getCurrentUserId(): String =
+        supervisorScope {
+            try {
+                Amplify.Auth.getCurrentUser().userId
+            } catch (e: Exception) {
+                throw IOException("Failed to get current user", e)
+            }
+        }
 
     private suspend fun fetchUserLibrary(userId: String): UserLibrary? =
         supervisorScope {
             try {
-                Log.d("LibraryViewModel", "Querying for library with userId: $userId")
+                Log.d(TAG, "Querying for library with userId: $userId")
                 val response = Amplify.API.query(
                     ModelQuery.list(
                         UserLibrary::class.java,
@@ -86,38 +106,55 @@ class LibraryViewModel : ViewModel() {
                     )
                 )
 
+                if (response.data == null) {
+                    Log.e(TAG, "Query response data is null")
+                    throw IOException("Failed to fetch library: response data is null")
+                }
+
                 val library = response.data.firstOrNull()
                 if (library != null) {
-                    Log.d("LibraryViewModel", "Found library with id: ${library.id}")
+                    Log.d(TAG, "Found library with id: ${library.id}")
                 } else {
-                    Log.d("LibraryViewModel", "No library found for user")
+                    Log.d(TAG, "No library found for user")
                 }
 
                 library
             } catch (e: ApiException) {
-                Log.e("LibraryViewModel", "Query failed", e)
+                Log.e(TAG, "Query failed", e)
                 throw IOException("Failed to fetch library", e)
             }
         }
 
-    private suspend fun fetchBooksForLibrary(libraryId: String): List<BookLibrary> =
+    private suspend fun fetchBooksForLibrary(libraryId: String): List<BookLibrary>? =
         supervisorScope {
             try {
                 val response = Amplify.API.query(
-                    ModelQuery.list(BookLibrary::class.java, BookLibrary.LIBRARY.eq(libraryId))
+                    ModelQuery.get<UserLibrary, UserLibraryPath>(
+                        UserLibrary::class.java,
+                        libraryId
+                    ) { libraryPath ->
+                        includes(
+                            libraryPath.books.book.author,
+                            libraryPath.books.book.categories.category,
+                            libraryPath.books.book.ratings,
+                            libraryPath.books.book.listings
+                        )
+                    }
                 )
 
-                val books = response.data.items.toList()
-                Log.d("LibraryViewModel", "Fetched response: $response")
-                Log.d("LibraryViewModel", "Fetched ${books.size} books for library")
-                books
+                if (response.data == null) {
+                    Log.e(TAG, "Books query response data is null")
+                    throw IOException("Failed to fetch books: response data is null")
+                }
 
+                val books = (response.data.books as? LoadedModelList<BookLibrary>)?.items?.toList()
+                Log.d(TAG, "Fetched ${books?.size ?: 0} books for library")
+                books
             } catch (e: ApiException) {
-                Log.e("LibraryViewModel", "Query failed", e)
+                Log.e(TAG, "Query failed", e)
                 throw IOException("Failed to fetch books", e)
             }
         }
-
 
     fun loadMore() {
         if (!isLoading && lastBookId != null) {

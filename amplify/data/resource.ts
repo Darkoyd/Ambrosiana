@@ -1,25 +1,25 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 
-/*== STEP 1 ===============================================================
-The section below creates a Todo database table with a "content" field. Try
-adding a new "isDone" field as a boolean. The authorization rule below
-specifies that any user authenticated via an API key can "create", "read",
-"update", and "delete" any "Todo" records.
-=========================================================================*/
 const schema = a.schema({
   Wishlist: a.model({
     id: a.id().required(),
     userId: a.string().required(),
     user: a.belongsTo("User", "userId"),
     books: a.hasMany("BookWishlist", "wishlistId")
-  }),
+  }).authorization(allow => [
+    allow.publicApiKey().to(['read']),
+    allow.owner().to(['create', 'update', 'delete'])
+  ]),
 
   BookWishlist: a.model({
     bookId: a.id(),
     wishlistId: a.id().required(),
     book: a.belongsTo("Book", "bookId"),
     list: a.belongsTo("Wishlist", "wishlistId")
-  }),
+  }).authorization(allow => [
+    allow.publicApiKey().to(['read']),
+    allow.owner().to(['create', 'update', 'delete'])
+  ]),
 
   Book: a.model({
     id: a.id().required(),
@@ -32,34 +32,48 @@ const schema = a.schema({
     listings: a.hasMany("Listing", "bookId"),
     wishlists: a.hasMany("BookWishlist", "bookId"),
     libraries: a.hasMany("BookLibrary", "bookId")
-  }).secondaryIndexes((index) => [index("isbn")]),
+  }).authorization(allow => [
+    allow.publicApiKey().to(['read']),
+    allow.owner().to(['create', 'update', 'delete'])
+  ]).secondaryIndexes((index) => [index("isbn")]),
 
   UserLibrary: a.model({
     id: a.id().required(),
     userId: a.string().required(),
     user: a.belongsTo("User", "userId"),
     books: a.hasMany("BookLibrary", "libraryId"),
-  }),
+  }).authorization(allow => [
+    allow.publicApiKey().to(['read']),
+    allow.owner().to(['create', 'update', 'delete'])
+  ]),
 
   BookLibrary: a.model({
     bookId: a.id(),
     libraryId: a.id().required(),
     book: a.belongsTo("Book", "bookId"),
     library: a.belongsTo("UserLibrary", "libraryId")
-  }),
+  }).authorization(allow => [
+    allow.publicApiKey().to(['read']),
+    allow.owner().to(['create', 'update', 'delete'])
+  ]),
 
   BookCategory: a.model({
     categoryId: a.string(),
     bookId: a.string().required(),
     category: a.belongsTo("Category", "categoryId"),
     book: a.belongsTo("Book", "bookId"),
-  }),
-
+  }).authorization(allow => [
+    allow.publicApiKey().to(['read']),
+    allow.owner().to(['create', 'update', 'delete'])
+  ]),
   Author: a.model({
     id: a.id().required(),
     name: a.string().required(),
     books: a.hasMany("Book", "authorId"),
-  }),
+  }).authorization(allow => [
+    allow.publicApiKey().to(['read']),
+    allow.owner().to(['create', 'update', 'delete'])
+  ]),
 
   User: a.model({
     email: a.string().required(),
@@ -73,7 +87,10 @@ const schema = a.schema({
     listings: a.hasMany("Listing", "userId"),
     wishlist: a.hasOne("Wishlist", "userId"),
     cart: a.hasOne("Cart", "userId")
-  }).identifier(["email"]),
+  }).authorization(allow => [
+    allow.publicApiKey().to(['read']),
+    allow.owner().to(['create', 'update', 'delete'])
+  ]).identifier(["email"]),
 
   UserRating: a.model({
     id: a.id().required(),
@@ -83,13 +100,19 @@ const schema = a.schema({
     ratedUser: a.belongsTo("User", "ratedId"),
     rating: a.integer().required(),
     description: a.string(),
-  }),
+  }).authorization(allow => [
+    allow.publicApiKey().to(['read']),
+    allow.owner().to(['create', 'update', 'delete'])
+  ]),
 
   Category: a.model({
     id: a.id().required(),
     name: a.string().required(),
     books: a.hasMany("BookCategory", "categoryId"),
-  }),
+  }).authorization(allow => [
+    allow.publicApiKey().to(['read']),
+    allow.owner().to(['create', 'update', 'delete'])
+  ]),
 
   BookRating: a.model({
     id: a.id().required(),
@@ -97,7 +120,10 @@ const schema = a.schema({
     book: a.belongsTo("Book", "bookId"),
     rating: a.integer().required(),
     description: a.string(),
-  }),
+  }).authorization(allow => [
+    allow.publicApiKey().to(['read']),
+    allow.owner().to(['create', 'update', 'delete'])
+  ]),
 
   Listing: a.model({
     id: a.id().required(),
@@ -110,16 +136,21 @@ const schema = a.schema({
     photos: a.string().array().required(),
     cartId: a.id(),
     cart: a.belongsTo("Cart", "cartId")
-  }),
-
+  }).authorization(allow => [
+    allow.publicApiKey().to(['read']),
+    allow.owner().to(['create', 'update', 'delete'])
+  ]),
   Cart: a.model({
     id: a.id().required(),
     userId: a.string().required(),
     user: a.belongsTo("User", "userId"),
     listings: a.hasMany("Listing", "cartId"),
     state: a.enum(["active", "completed", "shipping"]),
-  }),
-}).authorization((allow) => [allow.owner()]);
+  }).authorization(allow => [
+    allow.publicApiKey().to(['read']),
+    allow.owner().to(['create', 'update', 'delete'])
+  ]),
+});
 
 export type Schema = ClientSchema<typeof schema>;
 
@@ -127,38 +158,9 @@ export const data = defineData({
   schema,
   authorizationModes: {
     defaultAuthorizationMode: "userPool",
-    // API Key is used for a.allow.public() rules
+    // API Key is used for public access
     apiKeyAuthorizationMode: {
       expiresInDays: 30,
     },
   },
 });
-
-/*== STEP 2 ===============================================================
-Go to your frontend source code. From your client-side code, generate a
-Data client to make CRUDL requests to your table. (THIS SNIPPET WILL ONLY
-WORK IN THE FRONTEND CODE FILE.)
-
-Using JavaScript or Next.js React Server Components, Middleware, Server 
-Actions or Pages Router? Review how to generate Data clients for those use
-cases: https://docs.amplify.aws/gen2/build-a-backend/data/connect-to-API/
-=========================================================================*/
-
-/*
-"use client"
-import { generateClient } from "aws-amplify/data";
-import type { Schema } from "@/amplify/data/resource";
-
-const client = generateClient<Schema>() // use this Data client for CRUDL requests
-*/
-
-/*== STEP 3 ===============================================================
-Fetch records from the database and use them in your frontend component.
-(THIS SNIPPET WILL ONLY WORK IN THE FRONTEND CODE FILE.)
-=========================================================================*/
-
-/* For example, in a React component, you can use this snippet in your
-  function's RETURN statement */
-// const { data: todos } = await client.models.Todo.list()
-
-// return <ul>{todos.map(todo => <li key={todo.id}>{todo.content}</li>)}</ul>

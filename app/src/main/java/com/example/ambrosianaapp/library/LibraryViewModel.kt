@@ -42,11 +42,11 @@ class LibraryViewModel : ViewModel() {
                     updateLoadingMore(true)
                 }
 
-                val userId = getCurrentUserId()
+                val userId = Amplify.Auth.fetchUserAttributes()[0].value
                 Log.d("LibraryViewModel", "Fetching library for user: $userId")
 
                 // First, try to get the user's library
-                var userLibrary = fetchUserLibrary(userId)
+                val userLibrary = fetchUserLibrary(userId)
 
 
                 // Now fetch books for the library
@@ -74,14 +74,6 @@ class LibraryViewModel : ViewModel() {
         }
     }
 
-    private suspend fun getCurrentUserId(): String =
-        supervisorScope {
-            try {
-                Amplify.Auth.getCurrentUser().
-            } catch (e: Exception) {
-                throw IOException("Failed to get current user", e)
-            }
-        }
 
     private suspend fun fetchUserLibrary(userId: String): UserLibrary? =
         supervisorScope {
@@ -108,24 +100,16 @@ class LibraryViewModel : ViewModel() {
             }
         }
 
-    private suspend fun fetchBooksForLibrary(libraryId: String): List<BookLibrary>? =
+    private suspend fun fetchBooksForLibrary(libraryId: String): List<BookLibrary> =
         supervisorScope {
             try {
                 val response = Amplify.API.query(
-                    ModelQuery.get<UserLibrary, UserLibraryPath>(
-                        UserLibrary::class.java,
-                        libraryId
-                    ) { libraryPath ->
-                        includes(
-                            libraryPath.books.book.author,
-                            libraryPath.books.book.categories.category,
-                            libraryPath.books.book.ratings
-                        )
-                    }
+                    ModelQuery.list(BookLibrary::class.java, BookLibrary.LIBRARY.eq(libraryId))
                 )
 
-                val books = (response.data.books as? LoadedModelList<BookLibrary>)?.items?.toList()
-                Log.d("LibraryViewModel", "Fetched ${books?.size ?: 0} books for library")
+                val books = response.data.items.toList()
+                Log.d("LibraryViewModel", "Fetched response: $response")
+                Log.d("LibraryViewModel", "Fetched ${books.size} books for library")
                 books
 
             } catch (e: ApiException) {

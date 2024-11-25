@@ -3,10 +3,9 @@ package com.example.ambrosianaapp.auth
 import android.util.Log
 import com.amplifyframework.auth.AuthException
 import com.amplifyframework.auth.AuthUser
-import com.amplifyframework.auth.AuthUserAttributeKey
+import com.amplifyframework.auth.AuthUserAttribute
 import com.amplifyframework.auth.options.AuthSignUpOptions
 import com.amplifyframework.kotlin.core.Amplify
-import com.amplifyframework.ui.authenticator.ui.SignIn
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -20,43 +19,6 @@ class AmplifyAuthManager {
         private const val AUTH_CONFIRM = "AuthConfirm"
         private const val AUTH_SIGNOUT = "AuthSignOut"
         private const val AUTH_STATE = "AuthState"
-    }
-
-    suspend fun signUp(
-        email: String,
-        password: String
-    ): Result<Boolean> = runCatching {
-        Log.d(TAG, "$AUTH_SIGNUP: Attempting signup for email: ${email.masked()}")
-
-        val options = AuthSignUpOptions.builder()
-            .userAttribute(AuthUserAttributeKey.email(), email)
-            .build()
-
-        val result = Amplify.Auth.signUp(email, password, options)
-        Log.i(TAG, "$AUTH_SIGNUP: Successfully initiated signup for email: ${email.masked()}")
-        true
-    }.onFailure { exception ->
-        when (exception) {
-            is AuthException -> {
-                when (exception.cause?.message) {
-                    "UsernameExistsException" -> {
-                        Log.w(TAG, "$AUTH_SIGNUP: User already exists: ${email.masked()}")
-                    }
-                    "InvalidParameterException" -> {
-                        Log.e(TAG, "$AUTH_SIGNUP: Invalid parameters for email: ${email.masked()}", exception)
-                    }
-                    "InvalidPasswordException" -> {
-                        Log.e(TAG, "$AUTH_SIGNUP: Invalid password format", exception)
-                    }
-                    else -> {
-                        Log.e(TAG, "$AUTH_SIGNUP: Auth error during signup: ${exception.cause?.message}", exception)
-                    }
-                }
-            }
-            else -> {
-                Log.e(TAG, "$AUTH_SIGNUP: Unexpected error during signup for email: ${email.masked()}", exception)
-            }
-        }
     }
 
     suspend fun signUpWithOptions(

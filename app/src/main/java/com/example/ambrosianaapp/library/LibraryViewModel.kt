@@ -77,7 +77,7 @@ class LibraryViewModel : ViewModel() {
     private suspend fun getCurrentUserId(): String =
         supervisorScope {
             try {
-                Amplify.Auth.getCurrentUser().userId
+                Amplify.Auth.getCurrentUser().
             } catch (e: Exception) {
                 throw IOException("Failed to get current user", e)
             }

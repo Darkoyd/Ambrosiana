@@ -40,11 +40,10 @@ import com.example.ambrosianaapp.library.LibraryActivity
 import com.example.ambrosianaapp.ui.theme.AmbrosianaAppTheme
 import com.example.ambrosianaapp.ui.theme.AmbrosianaColor
 
-class LoginActivity : ComponentActivity() {
+class LoginActivity : AuthBaseActivity() {
     private val viewModel: LoginViewModel by viewModels()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun showAuthFlow() {
         setContent {
             AmbrosianaAppTheme {
                 LoginScreen(

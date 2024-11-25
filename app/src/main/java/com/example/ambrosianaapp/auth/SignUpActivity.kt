@@ -29,12 +29,10 @@ import com.example.ambrosianaapp.library.LibraryActivity
 import com.example.ambrosianaapp.ui.theme.AmbrosianaAppTheme
 import com.example.ambrosianaapp.ui.theme.AmbrosianaColor
 
-class SignUpActivity : ComponentActivity() {
+class SignUpActivity : AuthBaseActivity() {
     private val viewModel: SignUpViewModel by viewModels()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
+    override fun showAuthFlow() {
         setContent {
             AmbrosianaAppTheme {
                 SignUpScreen(

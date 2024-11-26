@@ -71,7 +71,6 @@ class LibraryViewModel : ViewModel() {
                         bookLibrary.book?.let { book ->
                             val bookx = (book as LoadedModelReference).value
                             val authorx = (bookx?.author as LoadedModelReference).value
-                            Log.d(TAG, "Book: $bookx")
                             bookx.let {
                                 authorx?.let { it1 ->
                                     AuthorUiModel(

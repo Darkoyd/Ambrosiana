@@ -38,10 +38,12 @@ public final class Book implements Model {
   public static final QueryField ID = field("Book", "id");
   public static final QueryField TITLE = field("Book", "title");
   public static final QueryField ISBN = field("Book", "isbn");
+  public static final QueryField THUMBNAIL = field("Book", "thumbnail");
   public static final QueryField AUTHOR = field("Book", "authorId");
   private final @ModelField(targetType="ID", isRequired = true) String id;
   private final @ModelField(targetType="String", isRequired = true) String title;
   private final @ModelField(targetType="String", isRequired = true) String isbn;
+  private final @ModelField(targetType="String") String thumbnail;
   private final @ModelField(targetType="Author") @BelongsTo(targetName = "authorId", targetNames = {"authorId"}, type = Author.class) ModelReference<Author> author;
   private final @ModelField(targetType="BookCategory") @HasMany(associatedWith = "book", type = BookCategory.class) ModelList<BookCategory> categories = null;
   private final @ModelField(targetType="BookRating") @HasMany(associatedWith = "book", type = BookRating.class) ModelList<BookRating> ratings = null;
@@ -66,6 +68,10 @@ public final class Book implements Model {
   
   public String getIsbn() {
       return isbn;
+  }
+  
+  public String getThumbnail() {
+      return thumbnail;
   }
   
   public ModelReference<Author> getAuthor() {
@@ -100,10 +106,11 @@ public final class Book implements Model {
       return updatedAt;
   }
   
-  private Book(String id, String title, String isbn, ModelReference<Author> author) {
+  private Book(String id, String title, String isbn, String thumbnail, ModelReference<Author> author) {
     this.id = id;
     this.title = title;
     this.isbn = isbn;
+    this.thumbnail = thumbnail;
     this.author = author;
   }
   
@@ -118,6 +125,7 @@ public final class Book implements Model {
       return ObjectsCompat.equals(getId(), book.getId()) &&
               ObjectsCompat.equals(getTitle(), book.getTitle()) &&
               ObjectsCompat.equals(getIsbn(), book.getIsbn()) &&
+              ObjectsCompat.equals(getThumbnail(), book.getThumbnail()) &&
               ObjectsCompat.equals(getAuthor(), book.getAuthor()) &&
               ObjectsCompat.equals(getCreatedAt(), book.getCreatedAt()) &&
               ObjectsCompat.equals(getUpdatedAt(), book.getUpdatedAt());
@@ -130,6 +138,7 @@ public final class Book implements Model {
       .append(getId())
       .append(getTitle())
       .append(getIsbn())
+      .append(getThumbnail())
       .append(getAuthor())
       .append(getCreatedAt())
       .append(getUpdatedAt())
@@ -144,6 +153,7 @@ public final class Book implements Model {
       .append("id=" + String.valueOf(getId()) + ", ")
       .append("title=" + String.valueOf(getTitle()) + ", ")
       .append("isbn=" + String.valueOf(getIsbn()) + ", ")
+      .append("thumbnail=" + String.valueOf(getThumbnail()) + ", ")
       .append("author=" + String.valueOf(getAuthor()) + ", ")
       .append("createdAt=" + String.valueOf(getCreatedAt()) + ", ")
       .append("updatedAt=" + String.valueOf(getUpdatedAt()))
@@ -168,6 +178,7 @@ public final class Book implements Model {
       id,
       null,
       null,
+      null,
       null
     );
   }
@@ -176,6 +187,7 @@ public final class Book implements Model {
     return new CopyOfBuilder(id,
       title,
       isbn,
+      thumbnail,
       author);
   }
   public interface TitleStep {
@@ -191,6 +203,7 @@ public final class Book implements Model {
   public interface BuildStep {
     Book build();
     BuildStep id(String id);
+    BuildStep thumbnail(String thumbnail);
     BuildStep author(Author author);
   }
   
@@ -199,15 +212,17 @@ public final class Book implements Model {
     private String id;
     private String title;
     private String isbn;
+    private String thumbnail;
     private ModelReference<Author> author;
     public Builder() {
       
     }
     
-    private Builder(String id, String title, String isbn, ModelReference<Author> author) {
+    private Builder(String id, String title, String isbn, String thumbnail, ModelReference<Author> author) {
       this.id = id;
       this.title = title;
       this.isbn = isbn;
+      this.thumbnail = thumbnail;
       this.author = author;
     }
     
@@ -219,6 +234,7 @@ public final class Book implements Model {
           id,
           title,
           isbn,
+          thumbnail,
           author);
     }
     
@@ -233,6 +249,12 @@ public final class Book implements Model {
      public BuildStep isbn(String isbn) {
         Objects.requireNonNull(isbn);
         this.isbn = isbn;
+        return this;
+    }
+    
+    @Override
+     public BuildStep thumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
         return this;
     }
     
@@ -254,8 +276,8 @@ public final class Book implements Model {
   
 
   public final class CopyOfBuilder extends Builder {
-    private CopyOfBuilder(String id, String title, String isbn, ModelReference<Author> author) {
-      super(id, title, isbn, author);
+    private CopyOfBuilder(String id, String title, String isbn, String thumbnail, ModelReference<Author> author) {
+      super(id, title, isbn, thumbnail, author);
       Objects.requireNonNull(title);
       Objects.requireNonNull(isbn);
     }
@@ -268,6 +290,11 @@ public final class Book implements Model {
     @Override
      public CopyOfBuilder isbn(String isbn) {
       return (CopyOfBuilder) super.isbn(isbn);
+    }
+    
+    @Override
+     public CopyOfBuilder thumbnail(String thumbnail) {
+      return (CopyOfBuilder) super.thumbnail(thumbnail);
     }
     
     @Override

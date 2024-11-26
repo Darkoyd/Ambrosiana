@@ -1,6 +1,7 @@
 package com.example.ambrosianaapp.library
 
 import AmbrosianaBottomNavigation
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -28,6 +29,8 @@ import com.example.ambrosianaapp.ui.theme.AmbrosianaAppTheme
 import com.example.ambrosianaapp.ui.theme.AmbrosianaColor
 import com.example.ambrosianaapp.ui.theme.AppFont
 import androidx.activity.viewModels
+import androidx.compose.material.icons.filled.Add
+import com.example.ambrosianaapp.book.newbook.NewBookActivity
 import com.example.ambrosianaapp.components.BookThumbnail
 
 
@@ -49,7 +52,10 @@ class LibraryActivity : ComponentActivity() {
                     onBookClick = { book ->
                         // We'll implement navigation to book details later
                     },
-                    isExpanded = false // You might want to control this state
+                    isExpanded = false,
+                    onNewBookClick = {
+                        startActivity(Intent(this, NewBookActivity::class.java))
+                    }
                 )
             }
         }
@@ -61,7 +67,8 @@ fun LibraryView(
     viewModel: LibraryViewModel,
     onBookClick: (BookUiModel) -> Unit,
     modifier: Modifier = Modifier,
-    isExpanded: Boolean
+    isExpanded: Boolean,
+    onNewBookClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -79,12 +86,26 @@ fun LibraryView(
             LibraryUiState.Empty -> EmptyState()
         }
 
+        FloatingActionButton(
+            onClick = onNewBookClick,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 16.dp, bottom = 76.dp), // 76.dp to position above bottom nav
+            containerColor = AmbrosianaColor.Green,
+            contentColor = AmbrosianaColor.White
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add, // Add this import: import androidx.compose.material.icons.filled.Add
+                contentDescription = "Add new book"
+            )
+        }
+
         AmbrosianaBottomNavigation(
             modifier = Modifier.align(Alignment.BottomCenter),
             isExpanded = isExpanded,
             onSearchClick = { /* ... */ },
             onPostClick = { /* ... */ },
-            onLibraryClick = { /* ... */ },
+            onLibraryClick = { /* Nothing */ },
             onNotificationsClick = { /* ... */ }
         )
     }
@@ -106,7 +127,7 @@ private fun BookGrid(
             start = 8.dp,
             end = 8.dp,
             top = 8.dp,
-            bottom = 80.dp // Account for bottom navigation
+            bottom = 80.dp
         ),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -125,6 +146,7 @@ private fun BookGrid(
             items(2) {
                 BookCardSkeleton()
             }
+
         }
 
         if (canLoadMore && !isLoadingMore) {
@@ -222,17 +244,9 @@ fun BookCard(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+                .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Thumbnail
-            BookThumbnail(
-                thumbnailKey = book.thumbnail,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            )
 
             // Title
             Text(
@@ -240,13 +254,22 @@ fun BookCard(
                 style = AppFont.typography.titleMedium,
                 color = AmbrosianaColor.Black,
                 overflow = TextOverflow.Ellipsis,
-                maxLines = 2
+                maxLines = 2,
+                modifier = Modifier.padding(8.dp)
+            )
+
+            // Thumbnail
+            BookThumbnail(
+                thumbnailKey = book.thumbnail,
+                modifier = Modifier
+                    .fillMaxWidth()
             )
 
             // Author
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.padding(8.dp, 0.dp)
             ) {
                 Icon(
                     imageVector = Icons.Filled.Person,
@@ -256,7 +279,7 @@ fun BookCard(
                 )
                 Text(
                     text = book.author.name,
-                    style = AppFont.typography.bodyMedium,
+                    style = AppFont.typography.titleSmall,
                     color = AmbrosianaColor.Green,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -266,7 +289,7 @@ fun BookCard(
 
             // ISBN
             Text(
-                text = book.isbn,
+                text = "ISBN:" + book.isbn,
                 style = AppFont.typography.bodySmall,
                 color = AmbrosianaColor.Black.copy(alpha = 0.6f),
                 maxLines = 1
@@ -295,12 +318,13 @@ fun BookCard(
                         containerColor = AmbrosianaColor.Green,
                         contentColor = AmbrosianaColor.White
                     ),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                    contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
+                    modifier = Modifier.padding(8.dp)
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Default.ArrowForward,
                         contentDescription = "View details",
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
@@ -346,16 +370,16 @@ private val previewBooks = listOf(
         title = "The Great Gatsby",
         author = AuthorUiModel("1", "F. Scott Fitzgerald"),
         isbn = "978-0743273565",
-        thumbnail = TODO(),
-        isListed = TODO(),
+        thumbnail = "TODO()",
+        isListed = true,
     ),
     BookUiModel(
         id = "2",
         title = "1984",
         author = AuthorUiModel("2", "George Orwell"),
         isbn = "978-0451524935",
-        isListed = false,
-        thumbnail = TODO()
+        isListed = true,
+        thumbnail = "TODO()"
     ),
     BookUiModel(
         id = "3",
@@ -363,7 +387,7 @@ private val previewBooks = listOf(
         author = AuthorUiModel("3", "Jane Austen"),
         isbn = "978-0141439518",
         isListed = false,
-        thumbnail = TODO()
+        thumbnail = "TODO()"
     ),
     BookUiModel(
         id = "4",
@@ -371,7 +395,7 @@ private val previewBooks = listOf(
         author = AuthorUiModel("4", "J.R.R. Tolkien"),
         isbn = "978-0547928227",
         isListed = true,
-        thumbnail = TODO()
+        thumbnail = "TODO()"
     )
 )
 

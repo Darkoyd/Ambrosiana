@@ -8,6 +8,7 @@ data class BookUiModel(
     val title: String,
     val author: AuthorUiModel,
     val isbn: String,
+    val thumbnail: String?,
     val isListed: Boolean = false
 )
 

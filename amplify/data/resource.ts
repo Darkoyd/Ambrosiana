@@ -25,6 +25,7 @@ const schema = a.schema({
     id: a.id().required(),
     title: a.string().required(),
     isbn: a.string().required(),
+    thumbnail: a.string(),
     authorId: a.string().required(),
     author: a.belongsTo("Author", "authorId"),
     categories: a.hasMany("BookCategory", "bookId"),

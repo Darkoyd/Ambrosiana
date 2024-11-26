@@ -84,6 +84,7 @@ class LibraryViewModel : ViewModel() {
                                         title = it.title,
                                         author = it2,
                                         isbn = it.isbn,
+                                        thumbnail = it.thumbnail,
                                     )
                                 }
                             }

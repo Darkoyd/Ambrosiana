@@ -28,6 +28,7 @@ import com.example.ambrosianaapp.ui.theme.AmbrosianaAppTheme
 import com.example.ambrosianaapp.ui.theme.AmbrosianaColor
 import com.example.ambrosianaapp.ui.theme.AppFont
 import androidx.activity.viewModels
+import com.example.ambrosianaapp.components.BookThumbnail
 
 
 data class Book(
@@ -201,7 +202,6 @@ private fun EmptyState() {
         )
     }
 }
-
 @Composable
 fun BookCard(
     book: BookUiModel,
@@ -211,7 +211,7 @@ fun BookCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 150.dp),
+            .heightIn(min = 300.dp),
         colors = CardDefaults.cardColors(
             containerColor = AmbrosianaColor.Secondary,
         ),
@@ -226,14 +226,21 @@ fun BookCard(
                 .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            // Thumbnail
+            BookThumbnail(
+                thumbnailKey = book.thumbnail,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            )
+
             // Title
             Text(
                 text = book.title,
                 style = AppFont.typography.titleMedium,
                 color = AmbrosianaColor.Black,
-//                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-//                modifier = Modifier.weight(1f)
+                maxLines = 2
             )
 
             // Author
@@ -256,16 +263,14 @@ fun BookCard(
                     modifier = Modifier.weight(1f)
                 )
             }
-            Row (
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = book.isbn
-                )
-            }
 
-
+            // ISBN
+            Text(
+                text = book.isbn,
+                style = AppFont.typography.bodySmall,
+                color = AmbrosianaColor.Black.copy(alpha = 0.6f),
+                maxLines = 1
+            )
 
             // Action buttons
             Row(
@@ -341,28 +346,32 @@ private val previewBooks = listOf(
         title = "The Great Gatsby",
         author = AuthorUiModel("1", "F. Scott Fitzgerald"),
         isbn = "978-0743273565",
-        isListed = true
+        thumbnail = TODO(),
+        isListed = TODO(),
     ),
     BookUiModel(
         id = "2",
         title = "1984",
         author = AuthorUiModel("2", "George Orwell"),
         isbn = "978-0451524935",
-        isListed = false
+        isListed = false,
+        thumbnail = TODO()
     ),
     BookUiModel(
         id = "3",
         title = "Pride and Prejudice",
         author = AuthorUiModel("3", "Jane Austen"),
         isbn = "978-0141439518",
-        isListed = false
+        isListed = false,
+        thumbnail = TODO()
     ),
     BookUiModel(
         id = "4",
         title = "The Hobbit",
         author = AuthorUiModel("4", "J.R.R. Tolkien"),
         isbn = "978-0547928227",
-        isListed = true
+        isListed = true,
+        thumbnail = TODO()
     )
 )
 

@@ -5,6 +5,7 @@ import { storage } from './storage/resource';
 import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { CfnApp } from "aws-cdk-lib/aws-pinpoint";
 import { Stack } from "aws-cdk-lib/core";
+import { CfnMap } from 'aws-cdk-lib/aws-location';
 
 const backend = defineBackend({
   auth,

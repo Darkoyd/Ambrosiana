@@ -79,6 +79,9 @@ dependencies {
     implementation("com.amplifyframework:core-kotlin:2.24.0")
     implementation("com.amplifyframework:aws-analytics-pinpoint:2.24.0")
 
+    implementation("com.amplifyframework:aws-auth-cognito:2.24.0")
+    implementation("com.amplifyframework:aws-geo-location:2.24.0")
+
 
 
     implementation("com.amplifyframework:aws-api:2.24.0")

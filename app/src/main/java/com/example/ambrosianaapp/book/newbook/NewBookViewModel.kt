@@ -1,12 +1,12 @@
 package com.example.ambrosianaapp.book.newbook
 
-import android.graphics.ColorSpace.Model
+import android.app.Application
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.core.net.toFile
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.amplifyframework.api.ApiException
@@ -17,15 +17,17 @@ import com.amplifyframework.datastore.generated.model.Book
 import com.amplifyframework.kotlin.core.Amplify
 import com.amplifyframework.storage.StoragePath
 import com.amplifyframework.storage.result.StorageUploadFileResult
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
 
-class NewBookViewModel : ViewModel() {
+class NewBookViewModel(application: Application) : AndroidViewModel(application) {
     // Form fields
     var title by mutableStateOf("")
     var author by mutableStateOf("")
@@ -99,33 +101,47 @@ class NewBookViewModel : ViewModel() {
             _submissionState.value = SubmissionState.Submitting
 
             try {
-                var authorEntity = checkAuthorByName(author)
-
-                if (authorEntity == null) {
-                    val auth = Author.builder().name(author).build()
-                    authorEntity = Amplify.API.mutate(ModelMutation.create(auth)).data
+                // First try to find or create the author
+                val authorEntity = try {
+                    checkAuthorByName(author) ?: run {
+                        val newAuthor = Author.builder().name(author).build()
+                        Amplify.API.mutate(ModelMutation.create(newAuthor)).data.also {
+                            Log.d("NewBookViewModel", "Created new author: ${it.name}")
+                        }
+                    }
+                } catch (e: Exception) {
+                    throw Exception("Failed to process author: ${e.message}")
                 }
 
-                // Upload image if selected
-                val key = "${UUID.randomUUID()}.jpg"
-                selectedImageUri?.let { uri ->
-                    uploadImage(key, uri)
+                // Handle image upload if present
+                val imageKey = selectedImageUri?.let { uri ->
+                    try {
+                        "${UUID.randomUUID()}.jpg".also { key ->
+                            uploadImage(key, uri)
+                            Log.d("NewBookViewModel", "Uploaded image with key: $key")
+                        }
+                    } catch (e: Exception) {
+                        Log.w("NewBookViewModel", "Failed to upload image, continuing without image", e)
+                        null
+                    }
                 }
 
-
-
-
+                // Create the book
                 val book = Book.builder()
                     .title(title)
                     .isbn(isbn)
                     .author(authorEntity)
-                    .thumbnail(key)
+                    .apply {
+                        imageKey?.let { thumbnail(it) }
+                    }
                     .build()
 
                 Amplify.API.mutate(ModelMutation.create(book))
+                Log.d("NewBookViewModel", "Successfully created book: ${book.title}")
 
                 _submissionState.value = SubmissionState.Success
             } catch (e: Exception) {
+                Log.e("NewBookViewModel", "Failed to create book", e)
                 _submissionState.value = SubmissionState.Error(e.message ?: "Failed to create book")
             } finally {
                 _isLoading.value = false
@@ -136,27 +152,58 @@ class NewBookViewModel : ViewModel() {
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     private suspend fun uploadImage(key: String, uri: Uri): StorageUploadFileResult {
         return try {
-            val file = uri.toFile()
-            val upload = Amplify.Storage.uploadFile(StoragePath.fromString("images/$key"), file)
-            val res = upload.result()
-            res
+            // Get the ContentResolver
+            val contentResolver = getApplication<Application>().contentResolver
+
+            // Create a temporary file to store the image
+            val tempFile = withContext(Dispatchers.IO) {
+                File.createTempFile("upload", ".jpg")
+            }.apply {
+                deleteOnExit() // Clean up after we're done
+            }
+
+            // Copy the content from the URI to our temporary file
+            contentResolver.openInputStream(uri)?.use { input ->
+                tempFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            } ?: throw Exception("Failed to read image content")
+
+            // Upload the temporary file
+            val upload = Amplify.Storage.uploadFile(
+                StoragePath.fromString("images/$key"),
+                tempFile
+            )
+
+            // Wait for the result
+            val result = upload.result()
+
+            // Clean up
+            tempFile.delete()
+
+            result
         } catch (e: Exception) {
+            Log.e("NewBookViewModel", "Upload failed", e)
             throw Exception("Failed to upload image: ${e.message}")
         }
     }
 
     private suspend fun checkAuthorByName(name: String): Author? {
-
         try {
-            val response = Amplify.API.query(ModelQuery.list(Author::class.java, Author.NAME.eq(name)))
-            return response.data.items.toList()[0]
+            val response = Amplify.API.query(
+                ModelQuery.list(Author::class.java, Author.NAME.eq(name))
+            )
 
-
+            // Safely get the first author if it exists
+            return response.data.items.firstOrNull()?.let { author ->
+                // Log successful author lookup
+                Log.d("NewBookViewModel", "Found existing author: ${author.name}")
+                author
+            }
         } catch (error: ApiException) {
-            Log.e("NewBookViewModel", "Could not check authors: $error")
+            Log.e("NewBookViewModel", "Could not check authors", error)
+            throw Exception("Failed to check author: ${error.message}")
         }
-
-        return null
     }
 
     sealed class SubmissionState {

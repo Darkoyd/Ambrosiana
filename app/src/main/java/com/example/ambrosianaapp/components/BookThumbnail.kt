@@ -1,6 +1,6 @@
 package com.example.ambrosianaapp.components
 
-import android.graphics.Bitmap
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -24,7 +24,6 @@ import com.example.ambrosianaapp.R
 import com.example.ambrosianaapp.ui.theme.AmbrosianaColor
 import com.example.ambrosianaapp.utils.ImageLoadingState
 import com.example.ambrosianaapp.utils.rememberImageLoader
-import kotlinx.coroutines.flow.collect
 
 @Composable
 fun BookThumbnail(
@@ -37,13 +36,12 @@ fun BookThumbnail(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(0.67f) // Standard book cover ratio
+            .aspectRatio(0.67f)
             .background(AmbrosianaColor.Primary),
         contentAlignment = Alignment.Center
     ) {
         when {
             thumbnailKey == null -> {
-                // Placeholder icon for books without thumbnails
                 Icon(
                     painter = painterResource(R.drawable.book_placeholder),
                     contentDescription = null,
@@ -70,7 +68,6 @@ fun BookThumbnail(
         }
     }
 
-    // Load image if we have a key
     LaunchedEffect(thumbnailKey) {
         thumbnailKey?.let {
             imageLoader.loadImage(it).collect { state ->

@@ -30,8 +30,10 @@ import com.example.ambrosianaapp.ui.theme.AmbrosianaColor
 import com.example.ambrosianaapp.ui.theme.AppFont
 import androidx.activity.viewModels
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.ui.platform.LocalContext
 import com.example.ambrosianaapp.book.newbook.NewBookActivity
 import com.example.ambrosianaapp.components.BookThumbnail
+import com.example.ambrosianaapp.components.NavigationUtils
 
 
 data class Book(
@@ -71,6 +73,7 @@ fun LibraryView(
     onNewBookClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     Box(modifier = modifier.fillMaxSize()) {
         when (val state = uiState) {
@@ -95,7 +98,7 @@ fun LibraryView(
             contentColor = AmbrosianaColor.White
         ) {
             Icon(
-                imageVector = Icons.Default.Add, // Add this import: import androidx.compose.material.icons.filled.Add
+                imageVector = Icons.Default.Add,
                 contentDescription = "Add new book"
             )
         }
@@ -103,7 +106,9 @@ fun LibraryView(
         AmbrosianaBottomNavigation(
             modifier = Modifier.align(Alignment.BottomCenter),
             isExpanded = isExpanded,
-            onSearchClick = { /* ... */ },
+            onSearchClick = {
+                NavigationUtils.navigateToScreen(context, NavigationUtils.Screen.LIBRARY, NavigationUtils.Screen.SEARCH)
+            },
             onPostClick = { /* ... */ },
             onLibraryClick = { /* Nothing */ },
             onNotificationsClick = { /* ... */ }
@@ -218,7 +223,7 @@ private fun EmptyState() {
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Add books from the search screen or create your own entries",
+            text = "Add books from the search screen!",
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center
         )

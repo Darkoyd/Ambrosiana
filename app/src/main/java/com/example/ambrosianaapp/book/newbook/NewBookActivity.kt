@@ -26,7 +26,9 @@ import com.example.ambrosianaapp.ui.theme.AmbrosianaAppTheme
 import com.example.ambrosianaapp.ui.theme.AmbrosianaColor
 
 class NewBookActivity : ComponentActivity() {
-    private val viewModel: NewBookViewModel by viewModels()
+    private val viewModel: NewBookViewModel by viewModels {
+        NewBookViewModelFactory(application)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

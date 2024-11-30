@@ -41,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import android.Manifest
 import com.example.ambrosianaapp.components.AmbrosianaButton
 import com.example.ambrosianaapp.components.AmbrosianaTextField
-import com.example.ambrosianaapp.permissions.ImagePermissionScreen
 import com.example.ambrosianaapp.permissions.PermissionManager
 import com.example.ambrosianaapp.ui.theme.AmbrosianaAppTheme
 import com.example.ambrosianaapp.ui.theme.AmbrosianaColor

@@ -91,15 +91,3 @@ fun LocationPermissionScreen(
         onPermissionResult = onPermissionResult
     )
 }
-
-@Composable
-fun ImagePermissionScreen(
-    onPermissionResult: (Boolean) -> Unit
-) {
-    PermissionScreen(
-        permission = Manifest.permission.READ_MEDIA_IMAGES,
-        rationaleTitle = "Photo Access",
-        rationaleMessage = "Ambrosiana needs access to your photos to let you upload book images.",
-        onPermissionResult = onPermissionResult
-    )
-}

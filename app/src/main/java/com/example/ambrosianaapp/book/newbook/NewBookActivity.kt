@@ -85,11 +85,13 @@ fun NewBookScreen(
                 IconButton(onClick = onNavigateUp) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Navigate back"
+                        contentDescription = "Navigate back",
+                        tint = AmbrosianaColor.Black
                     )
                 }
             }, colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = AmbrosianaColor.Primary
+                containerColor = AmbrosianaColor.Primary,
+                titleContentColor = AmbrosianaColor.Black
             )
             )
         }) { paddingValues ->
@@ -172,7 +174,7 @@ fun NewBookScreen(
             if (submissionState is NewBookViewModel.SubmissionState.Error) {
                 Text(
                     text = (submissionState as NewBookViewModel.SubmissionState.Error).message,
-                    color = MaterialTheme.colorScheme.error,
+                    color = AmbrosianaColor.Green,
                     style = MaterialTheme.typography.bodyMedium
                 )
             }

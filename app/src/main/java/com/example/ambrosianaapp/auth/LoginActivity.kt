@@ -125,7 +125,7 @@ private fun Form(
         viewModel.errorMessage?.let { error ->
             Text(
                 text = error,
-                color = MaterialTheme.colorScheme.error,
+                color = AmbrosianaColor.Green,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
         }

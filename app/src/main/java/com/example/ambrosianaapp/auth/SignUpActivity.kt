@@ -136,7 +136,7 @@ private fun ConfirmationForm(
             is SignUpState.Error -> {
                 Text(
                     text = (viewModel.currentState as SignUpState.Error).message,
-                    color = MaterialTheme.colorScheme.error,
+                    color = AmbrosianaColor.Green,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
@@ -258,7 +258,7 @@ private fun SignUpForm(
             is SignUpState.Error -> {
                 Text(
                     text = (viewModel.currentState as SignUpState.Error).message,
-                    color = MaterialTheme.colorScheme.error,
+                    color = AmbrosianaColor.Green,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }

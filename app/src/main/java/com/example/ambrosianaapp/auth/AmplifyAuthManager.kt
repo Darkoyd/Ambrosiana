@@ -32,6 +32,7 @@ class AmplifyAuthManager {
         private const val AUTH_STATE = "AuthState"
     }
 
+    @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
     suspend fun signUpWithOptions(
         email: String, password: String, options: AuthSignUpOptions
     ): Result<Boolean> = runCatching {

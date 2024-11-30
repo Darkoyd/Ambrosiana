@@ -1,7 +1,9 @@
 package com.example.ambrosianaapp.book.newbook
 
 
+import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -31,12 +33,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import android.Manifest
 import com.example.ambrosianaapp.components.AmbrosianaButton
 import com.example.ambrosianaapp.components.AmbrosianaTextField
+import com.example.ambrosianaapp.permissions.ImagePermissionScreen
+import com.example.ambrosianaapp.permissions.PermissionManager
 import com.example.ambrosianaapp.ui.theme.AmbrosianaAppTheme
 import com.example.ambrosianaapp.ui.theme.AmbrosianaColor
 
@@ -50,7 +56,9 @@ class NewBookActivity : ComponentActivity() {
         setContent {
             AmbrosianaAppTheme {
                 NewBookScreen(
-                    viewModel = viewModel, onNavigateUp = { finish() })
+                    viewModel = viewModel,
+                    onNavigateUp = { finish() }
+                )
             }
         }
     }
@@ -59,9 +67,11 @@ class NewBookActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewBookScreen(
-    viewModel: NewBookViewModel, onNavigateUp: () -> Unit, modifier: Modifier = Modifier
+    viewModel: NewBookViewModel,
+    onNavigateUp: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    LocalContext.current
+    val context = LocalContext.current
     val scrollState = rememberScrollState()
     val isLoading by viewModel.isLoading.collectAsState()
     val submissionState by viewModel.submissionState.collectAsState()
@@ -72,29 +82,52 @@ fun NewBookScreen(
         uri?.let { viewModel.onImageSelected(it) }
     }
 
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            pickMedia.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            )
+        }
+    }
+
+    fun getRequiredPermission(): String {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+    }
+
     LaunchedEffect(submissionState) {
         if (submissionState is NewBookViewModel.SubmissionState.Success) {
             onNavigateUp()
         }
     }
 
+
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Add New Book") }, navigationIcon = {
-                IconButton(onClick = onNavigateUp) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Navigate back",
-                        tint = AmbrosianaColor.Black
-                    )
-                }
-            }, colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = AmbrosianaColor.Primary,
-                titleContentColor = AmbrosianaColor.Black
+                title = { Text("Add New Book") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateUp) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Navigate back",
+                            tint = AmbrosianaColor.Black
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = AmbrosianaColor.Primary,
+                    titleContentColor = AmbrosianaColor.Black
+                )
             )
-            )
-        }) { paddingValues ->
+        }
+    ) { paddingValues ->
         Column(
             modifier = modifier
                 .fillMaxSize()
@@ -102,7 +135,6 @@ fun NewBookScreen(
                 .padding(paddingValues)
                 .verticalScroll(scrollState)
                 .padding(16.dp),
-
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -151,10 +183,16 @@ fun NewBookScreen(
 
             AmbrosianaButton(
                 onClick = {
-                    pickMedia.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                    )
-                }, text = if (viewModel.selectedImageUri != null) "Change Image" else "Select Image"
+                    val permissionManager = PermissionManager(context)
+                    if (permissionManager.checkImagePermission()) {
+                        pickMedia.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    } else {
+                        permissionLauncher.launch(getRequiredPermission())
+                    }
+                },
+                text = if (viewModel.selectedImageUri != null) "Change Image" else "Select Image"
             )
 
             viewModel.selectedImageUri?.let { uri ->
@@ -163,14 +201,12 @@ fun NewBookScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Submit button
             AmbrosianaButton(
                 onClick = { viewModel.submitForm() },
                 enabled = !isLoading,
                 text = if (isLoading) "Creating..." else "Create Book"
             )
 
-            // Error message
             if (submissionState is NewBookViewModel.SubmissionState.Error) {
                 Text(
                     text = (submissionState as NewBookViewModel.SubmissionState.Error).message,

@@ -1,7 +1,7 @@
 package com.example.ambrosianaapp.auth
 
 import android.content.Intent
-import android.util.Log
+import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
@@ -20,8 +20,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -35,25 +37,52 @@ import com.example.ambrosianaapp.R
 import com.example.ambrosianaapp.components.AmbrosianaButton
 import com.example.ambrosianaapp.components.AmbrosianaTextField
 import com.example.ambrosianaapp.library.LibraryActivity
+import com.example.ambrosianaapp.permissions.LocationPermissionScreen
+import com.example.ambrosianaapp.permissions.PermissionManager
 import com.example.ambrosianaapp.ui.theme.AmbrosianaAppTheme
 import com.example.ambrosianaapp.ui.theme.AmbrosianaColor
 
 class SignUpActivity : AuthBaseActivity() {
     private val viewModel: SignUpViewModel by viewModels()
+    private lateinit var permissionManager: PermissionManager
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        permissionManager = PermissionManager(this)
+    }
 
     override fun showAuthFlow() {
         setContent {
-            AmbrosianaAppTheme {
-                SignUpScreen(
-                    viewModel = viewModel, onSignUpSuccess = {
-                        Log.d("SignUpActivity", "SignUp success callback triggered")
-                        val intent = Intent(this, LibraryActivity::class.java).apply {
-                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        }
-                        startActivity(intent)
-                        finish()
-                    })
+            SignUpFlow(
+                viewModel = viewModel, permissionManager = permissionManager, onSignUpSuccess = {
+                    val intent = Intent(this, LibraryActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
+                    startActivity(intent)
+                    finish()
+                })
+        }
+    }
+}
+
+@Composable
+private fun SignUpFlow(
+    viewModel: SignUpViewModel, permissionManager: PermissionManager, onSignUpSuccess: () -> Unit
+) {
+    AmbrosianaAppTheme {
+        var showLocationPermission by remember {
+            mutableStateOf(!permissionManager.checkLocationPermission())
+        }
+
+        if (showLocationPermission) {
+            LocationPermissionScreen { isGranted ->
+                showLocationPermission = false
+                // Proceed with sign up regardless of permission result
             }
+        } else {
+            SignUpScreen(
+                viewModel = viewModel, onSignUpSuccess = onSignUpSuccess
+            )
         }
     }
 }

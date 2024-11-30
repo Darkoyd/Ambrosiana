@@ -72,6 +72,10 @@ dependencies {
     implementation("androidx.compose.ui:ui-text-google-fonts:1.5.4")
 
 
+    implementation ("androidx.compose.runtime:runtime:1.7.5")
+    implementation ("androidx.activity:activity-compose:1.7.2")
+    implementation ("com.google.accompanist:accompanist-permissions:0.32.0")
+
 
     // Amplify dependencies
     implementation("com.amplifyframework:aws-analytics-pinpoint:2.24.0")

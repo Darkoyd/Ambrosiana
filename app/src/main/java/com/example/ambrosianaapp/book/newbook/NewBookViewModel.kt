@@ -3,6 +3,8 @@ package com.example.ambrosianaapp.book.newbook
 import android.app.Application
 import android.net.Uri
 import android.util.Log
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -46,6 +48,9 @@ class NewBookViewModel(application: Application) : AndroidViewModel(application)
     // Form submission state
     private val _submissionState = MutableStateFlow<SubmissionState>(SubmissionState.Idle)
     val submissionState: StateFlow<SubmissionState> = _submissionState
+
+    private var imagePicker: ((PickVisualMediaRequest) -> Unit)? = null
+
 
     private fun validateForm(): Boolean {
         var isValid = true
@@ -133,8 +138,8 @@ class NewBookViewModel(application: Application) : AndroidViewModel(application)
 
                 // Create the book
                 val book = Book.builder().title(title).isbn(isbn).author(authorEntity).apply {
-                        imageKey?.let { thumbnail(it) }
-                    }.build()
+                    imageKey?.let { thumbnail(it) }
+                }.build()
 
                 Amplify.API.mutate(ModelMutation.create(book))
                 Log.d("NewBookViewModel", "Successfully created book: ${book.title}")
@@ -162,35 +167,30 @@ class NewBookViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     private suspend fun uploadImage(key: String, uri: Uri): StorageUploadFileResult {
         return try {
-            // Get the ContentResolver
             val contentResolver = getApplication<Application>().contentResolver
 
-            // Create a temporary file to store the image
             val tempFile = withContext(Dispatchers.IO) {
                 File.createTempFile("upload", ".jpg")
             }.apply {
-                deleteOnExit() // Clean up after we're done
+                deleteOnExit()
             }
 
-            // Copy the content from the URI to our temporary file
             contentResolver.openInputStream(uri)?.use { input ->
                 tempFile.outputStream().use { output ->
                     input.copyTo(output)
                 }
             } ?: throw Exception("Failed to read image content")
 
-            // Upload the temporary file
             val upload = Amplify.Storage.uploadFile(
                 StoragePath.fromString("images/$key"), tempFile
             )
 
-            // Wait for the result
             val result = upload.result()
 
-            // Clean up
             tempFile.delete()
 
             result
@@ -206,9 +206,7 @@ class NewBookViewModel(application: Application) : AndroidViewModel(application)
                 ModelQuery.list(Author::class.java, Author.NAME.eq(name))
             )
 
-            // Safely get the first author if it exists
             return response.data.items.firstOrNull()?.let { author ->
-                // Log successful author lookup
                 Log.d("NewBookViewModel", "Found existing author: ${author.name}")
                 author
             }
@@ -224,4 +222,5 @@ class NewBookViewModel(application: Application) : AndroidViewModel(application)
         object Success : SubmissionState()
         data class Error(val message: String) : SubmissionState()
     }
+
 }

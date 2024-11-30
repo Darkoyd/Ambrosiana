@@ -9,8 +9,7 @@ class NewBookViewModelFactory(
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(NewBookViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return NewBookViewModel(application) as T
+            @Suppress("UNCHECKED_CAST") return NewBookViewModel(application) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

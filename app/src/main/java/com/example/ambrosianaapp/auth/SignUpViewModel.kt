@@ -67,15 +67,13 @@ class SignUpViewModel(
             currentState = SignUpState.Loading
             try {
                 // Create sign-up options with additional attributes
-                val signUpOptions = AuthSignUpOptions.builder()
-                    .userAttribute(AuthUserAttributeKey.email(), email)
-                    .build()
+                val signUpOptions =
+                    AuthSignUpOptions.builder().userAttribute(AuthUserAttributeKey.email(), email)
+                        .build()
 
-                authManager.signUpWithOptions(email, password, signUpOptions)
-                    .onSuccess {
+                authManager.signUpWithOptions(email, password, signUpOptions).onSuccess {
                         currentState = SignUpState.WaitingForConfirmation
-                    }
-                    .onFailure { error ->
+                    }.onFailure { error ->
                         currentState = SignUpState.Error(error.localizedMessage ?: "Sign up failed")
                     }
 
@@ -95,52 +93,45 @@ class SignUpViewModel(
             currentState = SignUpState.Loading
             try {
                 // First confirm the signup
-                authManager.confirmSignUp(email, confirmationCode)
-                    .onSuccess {
+                authManager.confirmSignUp(email, confirmationCode).onSuccess {
                         // After confirmation, sign in the user
-                        authManager.signIn(email, password)
-                            .onSuccess { authUser ->
+                        authManager.signIn(email, password).onSuccess { authUser ->
                                 try {
                                     // Now create the user entities with the authenticated session
-                                    val user = User.builder()
-                                        .email(email)
-                                        .phone(phone)
-                                        .address(address)
-                                        .firstName(firstName)
-                                        .lastName(lastName)
-                                        .build()
+                                    val user =
+                                        User.builder().email(email).phone(phone).address(address)
+                                            .firstName(firstName).lastName(lastName).build()
 
                                     Amplify.API.mutate(ModelMutation.create(user))
                                     Log.d("SignUpViewModel", "Created user in database")
 
-                                    val userLibrary = UserLibrary.builder()
-                                        .user(user)
-                                        .build()
+                                    val userLibrary = UserLibrary.builder().user(user).build()
                                     Amplify.API.mutate(ModelMutation.create(userLibrary))
                                     Log.d("SignUpViewModel", "Created user library")
 
-                                    val wishlist = Wishlist.builder()
-                                        .user(user)
-                                        .build()
+                                    val wishlist = Wishlist.builder().user(user).build()
                                     Amplify.API.mutate(ModelMutation.create(wishlist))
                                     Log.d("SignUpViewModel", "Created wishlist")
 
                                     currentState = SignUpState.Success
-                                    Log.d("SignUpViewModel", "Calling onConfirmationSuccess callback")
+                                    Log.d(
+                                        "SignUpViewModel",
+                                        "Calling onConfirmationSuccess callback"
+                                    )
                                     onConfirmationSuccess()
                                 } catch (e: DataStoreException) {
                                     Log.e("SignUpViewModel", "Failed to create user entities", e)
                                     currentState = SignUpState.Error("Failed to setup user account")
                                 }
-                            }
-                            .onFailure { error ->
+                            }.onFailure { error ->
                                 Log.e("SignUpViewModel", "Sign in failed after confirmation", error)
-                                currentState = SignUpState.Error("Failed to sign in after confirmation")
+                                currentState =
+                                    SignUpState.Error("Failed to sign in after confirmation")
                             }
-                    }
-                    .onFailure { error ->
+                    }.onFailure { error ->
                         Log.e("SignUpViewModel", "Confirmation failed", error)
-                        currentState = SignUpState.Error(error.localizedMessage ?: "Confirmation failed")
+                        currentState =
+                            SignUpState.Error(error.localizedMessage ?: "Confirmation failed")
                     }
             } catch (e: Exception) {
                 Log.e("SignUpViewModel", "Unexpected error during confirmation", e)

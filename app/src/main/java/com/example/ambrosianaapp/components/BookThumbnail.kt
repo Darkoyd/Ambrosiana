@@ -1,6 +1,5 @@
 package com.example.ambrosianaapp.components
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -27,8 +26,7 @@ import com.example.ambrosianaapp.utils.rememberImageLoader
 
 @Composable
 fun BookThumbnail(
-    thumbnailKey: String?,
-    modifier: Modifier = Modifier
+    thumbnailKey: String?, modifier: Modifier = Modifier
 ) {
     var imageState by remember { mutableStateOf<ImageLoadingState>(ImageLoadingState.Loading) }
     val imageLoader = rememberImageLoader(LocalContext.current)
@@ -48,9 +46,11 @@ fun BookThumbnail(
                     tint = AmbrosianaColor.Green
                 )
             }
+
             imageState is ImageLoadingState.Loading -> {
                 CircularProgressIndicator(color = AmbrosianaColor.Green)
             }
+
             imageState is ImageLoadingState.Success -> {
                 Image(
                     bitmap = (imageState as ImageLoadingState.Success).bitmap.asImageBitmap(),
@@ -58,6 +58,7 @@ fun BookThumbnail(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+
             imageState is ImageLoadingState.Error -> {
                 Icon(
                     painter = painterResource(R.drawable.error_placeholder),

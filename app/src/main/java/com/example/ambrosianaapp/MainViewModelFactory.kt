@@ -9,8 +9,7 @@ class MainViewModelFactory(
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return MainViewModel(connectivityManager) as T
+            @Suppress("UNCHECKED_CAST") return MainViewModel(connectivityManager) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

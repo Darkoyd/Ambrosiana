@@ -20,12 +20,10 @@ class LoginViewModel(
             isLoading = true
             errorMessage = null
 
-            authManager.signIn(email, password)
-                .onSuccess {
+            authManager.signIn(email, password).onSuccess {
                     isLoading = false
                     onSuccess()
-                }
-                .onFailure {
+                }.onFailure {
                     isLoading = false
                     errorMessage = it.localizedMessage ?: "Login failed"
                 }

@@ -25,10 +25,12 @@ abstract class AuthBaseActivity : ComponentActivity() {
                     Log.i("AuthBaseActivity", "Active session found, redirecting to app")
                     navigateToApp()
                 }
+
                 is SessionManager.AuthState.SignedOut -> {
                     Log.i("AuthBaseActivity", "No active session, showing auth flow")
                     showAuthFlow()
                 }
+
                 SessionManager.AuthState.Unknown -> {
                     Log.w("AuthBaseActivity", "Unknown auth state, showing auth flow")
                     showAuthFlow()

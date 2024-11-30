@@ -27,7 +27,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
@@ -64,9 +63,7 @@ import kotlinx.coroutines.launch
 
 
 data class Book(
-    val title: String,
-    val author: String,
-    val category: String
+    val title: String, val author: String, val category: String
 )
 
 class LibraryActivity : ComponentActivity() {
@@ -88,16 +85,11 @@ class LibraryActivity : ComponentActivity() {
         }
         setContent {
             AmbrosianaAppTheme {
-                LibraryView(
-                    viewModel = viewModel,
-                    onBookClick = { book ->
-                        // We'll implement navigation to book details later
-                    },
-                    isExpanded = false,
-                    onSignOutClick = {
-                        viewModel.signOut()
-                    }
-                )
+                LibraryView(viewModel = viewModel, onBookClick = { book ->
+                    // We'll implement navigation to book details later
+                }, isExpanded = false, onSignOutClick = {
+                    viewModel.signOut()
+                })
             }
         }
     }
@@ -131,6 +123,7 @@ fun LibraryView(
                 onLoadMore = viewModel::loadMore,
                 onBookClick = onBookClick
             )
+
             is LibraryUiState.Error -> ErrorState(state)
             LibraryUiState.Empty -> EmptyState()
         }
@@ -144,8 +137,7 @@ fun LibraryView(
             contentColor = AmbrosianaColor.White
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                contentDescription = "Sign Out"
+                imageVector = Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Sign Out"
             )
         }
 
@@ -153,19 +145,21 @@ fun LibraryView(
             modifier = Modifier.align(Alignment.BottomCenter),
             isExpanded = isExpanded,
             onSearchClick = {
-                NavigationUtils.navigateToScreen(context, NavigationUtils.Screen.LIBRARY, NavigationUtils.Screen.SEARCH)
+                NavigationUtils.navigateToScreen(
+                    context,
+                    NavigationUtils.Screen.LIBRARY,
+                    NavigationUtils.Screen.SEARCH
+                )
             },
             onPostClick = { toastState.show("Posts feature coming soon!") },
             onLibraryClick = { /* Nothing */ },
-            onNotificationsClick = { toastState.show("Notifications feature coming soon!") }
-        )
+            onNotificationsClick = { toastState.show("Notifications feature coming soon!") })
     }
 
     AmbrosianaToast(
         message = toastState.message,
         isVisible = toastState.isVisible,
-        onDismiss = {toastState.hide()}
-    )
+        onDismiss = { toastState.hide() })
 }
 
 @Composable
@@ -181,22 +175,15 @@ private fun BookGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier,
         contentPadding = PaddingValues(
-            start = 8.dp,
-            end = 8.dp,
-            top = 8.dp,
-            bottom = 80.dp
+            start = 8.dp, end = 8.dp, top = 8.dp, bottom = 80.dp
         ),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(
-            items = books,
-            key = { it.id }
-        ) { book ->
+            items = books, key = { it.id }) { book ->
             BookCard(
-                book = book,
-                onClick = { onBookClick(book) }
-            )
+                book = book, onClick = { onBookClick(book) })
         }
 
         if (isLoadingMore) {
@@ -243,14 +230,11 @@ private fun ErrorState(error: LibraryUiState.Error) {
             text = when (error) {
                 is LibraryUiState.Error.Network -> "No internet connection"
                 is LibraryUiState.Error.Generic -> error.message
-            },
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center
+            }, style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(8.dp))
         Button(
-            onClick = {},
-            colors = ButtonDefaults.buttonColors(
+            onClick = {}, colors = ButtonDefaults.buttonColors(
                 containerColor = AmbrosianaColor.Green
             )
         ) {
@@ -281,28 +265,22 @@ private fun EmptyState() {
         )
     }
 }
+
 @Composable
 fun BookCard(
-    book: BookUiModel,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    book: BookUiModel, onClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 300.dp),
-        colors = CardDefaults.cardColors(
+            .heightIn(min = 300.dp), colors = CardDefaults.cardColors(
             containerColor = AmbrosianaColor.Secondary,
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp,
-            pressedElevation = 4.dp
+        ), elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp, pressedElevation = 4.dp
         )
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
 
             // Title
@@ -317,9 +295,7 @@ fun BookCard(
 
             // Thumbnail
             BookThumbnail(
-                thumbnailKey = book.thumbnail,
-                modifier = Modifier
-                    .fillMaxWidth()
+                thumbnailKey = book.thumbnail, modifier = Modifier.fillMaxWidth()
             )
 
             // Author
@@ -372,8 +348,7 @@ fun BookCard(
                 Button(
                     onClick = onClick,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = AmbrosianaColor.Green,
-                        contentColor = AmbrosianaColor.White
+                        containerColor = AmbrosianaColor.Green, contentColor = AmbrosianaColor.White
                     ),
                     contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
                     modifier = Modifier.padding(8.dp)
@@ -392,12 +367,10 @@ fun BookCard(
 @Composable
 private fun BookCardSkeleton() {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier.padding(8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Box(
                 modifier = Modifier
@@ -429,24 +402,21 @@ private val previewBooks = listOf(
         isbn = "978-0743273565",
         thumbnail = "TODO()",
         isListed = true,
-    ),
-    BookUiModel(
+    ), BookUiModel(
         id = "2",
         title = "1984",
         author = AuthorUiModel("2", "George Orwell"),
         isbn = "978-0451524935",
         isListed = true,
         thumbnail = "TODO()"
-    ),
-    BookUiModel(
+    ), BookUiModel(
         id = "3",
         title = "Pride and Prejudice",
         author = AuthorUiModel("3", "Jane Austen"),
         isbn = "978-0141439518",
         isListed = false,
         thumbnail = "TODO()"
-    ),
-    BookUiModel(
+    ), BookUiModel(
         id = "4",
         title = "The Hobbit",
         author = AuthorUiModel("4", "J.R.R. Tolkien"),
@@ -463,10 +433,8 @@ private fun LibraryViewLoadingPreview() {
     AmbrosianaAppTheme {
         LibraryView(
             viewModel = LibraryViewModel().apply {
-                _uiState.value = LibraryUiState.Loading
-            },
-            onBookClick = {},
-            isExpanded = false
+            _uiState.value = LibraryUiState.Loading
+        }, onBookClick = {}, isExpanded = false
         )
     }
 }
@@ -477,14 +445,10 @@ private fun LibraryViewSuccessPreview() {
     AmbrosianaAppTheme {
         LibraryView(
             viewModel = LibraryViewModel().apply {
-                _uiState.value = LibraryUiState.Success(
-                    books = previewBooks,
-                    isLoadingMore = false,
-                    canLoadMore = true
-                )
-            },
-            onBookClick = {},
-            isExpanded = false
+            _uiState.value = LibraryUiState.Success(
+                books = previewBooks, isLoadingMore = false, canLoadMore = true
+            )
+        }, onBookClick = {}, isExpanded = false
         )
     }
 }
@@ -495,10 +459,8 @@ private fun LibraryViewEmptyPreview() {
     AmbrosianaAppTheme {
         LibraryView(
             viewModel = LibraryViewModel().apply {
-                _uiState.value = LibraryUiState.Empty
-            },
-            onBookClick = {},
-            isExpanded = false
+            _uiState.value = LibraryUiState.Empty
+        }, onBookClick = {}, isExpanded = false
         )
     }
 }
@@ -509,10 +471,8 @@ private fun LibraryViewErrorPreview() {
     AmbrosianaAppTheme {
         LibraryView(
             viewModel = LibraryViewModel().apply {
-                _uiState.value = LibraryUiState.Error.Network { }
-            },
-            onBookClick = {},
-            isExpanded = false
+            _uiState.value = LibraryUiState.Error.Network { }
+        }, onBookClick = {}, isExpanded = false
         )
     }
 }
@@ -534,14 +494,10 @@ private fun LibraryViewThemePreview() {
     AmbrosianaAppTheme {
         LibraryView(
             viewModel = LibraryViewModel().apply {
-                _uiState.value = LibraryUiState.Success(
-                    books = previewBooks,
-                    isLoadingMore = false,
-                    canLoadMore = true
-                )
-            },
-            onBookClick = {},
-            isExpanded = false
+            _uiState.value = LibraryUiState.Success(
+                books = previewBooks, isLoadingMore = false, canLoadMore = true
+            )
+        }, onBookClick = {}, isExpanded = false
         )
     }
 }

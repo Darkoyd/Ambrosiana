@@ -5,11 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.LruCache
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import com.amplifyframework.kotlin.core.Amplify
 import com.amplifyframework.storage.StoragePath
 import kotlinx.coroutines.Dispatchers
@@ -106,9 +102,7 @@ class ImageLoader(private val context: Context) {
     }
 
     private fun calculateInSampleSize(
-        options: BitmapFactory.Options,
-        reqWidth: Int,
-        reqHeight: Int
+        options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int
     ): Int {
         val (height: Int, width: Int) = options.run { outHeight to outWidth }
         var inSampleSize = 1
@@ -117,8 +111,7 @@ class ImageLoader(private val context: Context) {
             val halfHeight: Int = height / 2
             val halfWidth: Int = width / 2
 
-            while (halfHeight / inSampleSize >= reqHeight &&
-                halfWidth / inSampleSize >= reqWidth) {
+            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
                 inSampleSize *= 2
             }
         }
@@ -127,8 +120,7 @@ class ImageLoader(private val context: Context) {
     }
 
     private fun String.hashKey(): String {
-        return MessageDigest.getInstance("MD5")
-            .digest(toByteArray())
+        return MessageDigest.getInstance("MD5").digest(toByteArray())
             .joinToString("") { "%02x".format(it) }
     }
 

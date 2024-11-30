@@ -14,8 +14,7 @@ data class BookUiModel(
 
 @Immutable
 data class AuthorUiModel(
-    val id: String,
-    val name: String
+    val id: String, val name: String
 )
 
 sealed class LibraryUiState {
@@ -25,9 +24,11 @@ sealed class LibraryUiState {
         val isLoadingMore: Boolean = false,
         val canLoadMore: Boolean = true
     ) : LibraryUiState()
+
     sealed class Error : LibraryUiState() {
         data class Network(val retry: () -> Unit) : Error()
         data class Generic(val message: String, val retry: () -> Unit) : Error()
     }
+
     data object Empty : LibraryUiState()
 }

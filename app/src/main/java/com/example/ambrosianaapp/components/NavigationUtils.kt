@@ -20,7 +20,6 @@ object NavigationUtils {
     }
 
     enum class Screen {
-        SEARCH,
-        LIBRARY,
+        SEARCH, LIBRARY,
     }
 }

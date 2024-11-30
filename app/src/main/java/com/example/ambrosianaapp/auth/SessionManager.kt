@@ -1,7 +1,6 @@
 package com.example.ambrosianaapp.auth
 
 import android.util.Log
-import com.amplifyframework.auth.AuthSession
 import com.amplifyframework.auth.AuthUser
 import com.amplifyframework.kotlin.core.Amplify
 import kotlinx.coroutines.flow.MutableStateFlow

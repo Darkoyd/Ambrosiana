@@ -7,10 +7,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 
 class MainViewModel(connectivityManager: ConnectivityManager) : ViewModel() {
-    val isOnline = connectivityManager.observeConnectivity()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            true
+    val isOnline = connectivityManager.observeConnectivity().stateIn(
+            viewModelScope, SharingStarted.WhileSubscribed(5000), true
         )
 }

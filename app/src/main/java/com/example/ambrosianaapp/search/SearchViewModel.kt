@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import aws.smithy.kotlin.runtime.io.IOException
-import com.amplifyframework.analytics.AnalyticsEvent
 import com.amplifyframework.api.ApiException
 import com.amplifyframework.api.graphql.model.ModelQuery
 import com.amplifyframework.core.model.LazyModelList
@@ -12,7 +11,6 @@ import com.amplifyframework.core.model.LazyModelReference
 import com.amplifyframework.datastore.generated.model.Book
 import com.amplifyframework.kotlin.core.Amplify
 import com.example.ambrosianaapp.analytics.AmbrosianaAnalytics
-import com.example.ambrosianaapp.auth.AmplifyAuthManager
 import com.example.ambrosianaapp.library.AuthorUiModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -79,7 +77,8 @@ class SearchViewModel(
                     try {
                         val auth = (book.author as? LazyModelReference)?.fetchModel()
 
-                        val listings = (book.listings as? LazyModelList)?.fetchPage()?.items?.toList()
+                        val listings =
+                            (book.listings as? LazyModelList)?.fetchPage()?.items?.toList()
 
                         val available = listings?.filter { it.status.name == "available" }
 
@@ -88,8 +87,7 @@ class SearchViewModel(
 
                         val authUi = auth?.let {
                             AuthorUiModel(
-                                id = it.id,
-                                name = it.name
+                                id = it.id, name = it.name
                             )
                         }
 
@@ -141,7 +139,6 @@ class SearchViewModel(
     }
 
 
-
     private suspend fun fetchBooks(): List<Book> = supervisorScope {
         try {
             Log.d(TAG, "Fetching books with query: $currentSearchQuery")
@@ -149,11 +146,14 @@ class SearchViewModel(
             val response = Amplify.API.query(
                 ModelQuery.list(
                     Book::class.java,
-                    Book.ISBN.contains(currentSearchQuery).or(Book.AUTHOR.contains(currentSearchQuery).or(Book.TITLE.contains(currentSearchQuery)))
+                    Book.ISBN.contains(currentSearchQuery).or(
+                        Book.AUTHOR.contains(currentSearchQuery)
+                            .or(Book.TITLE.contains(currentSearchQuery))
+                    )
                 )
             )
 
-            Log.d(TAG, "Fetching books: ${response.data.items.toList()}" )
+            Log.d(TAG, "Fetching books: ${response.data.items.toList()}")
 
 
             response.data.items.toList()
@@ -168,9 +168,7 @@ class SearchViewModel(
         val errorState = when (error) {
             is IOException -> SearchUiState.Error.Network { loadBooks(true) }
             else -> SearchUiState.Error.Generic(
-                message = error.message ?: "Unknown error occurred",
-                retry = { loadBooks(true) }
-            )
+                message = error.message ?: "Unknown error occurred", retry = { loadBooks(true) })
         }
 
         if (_uiState.value !is SearchUiState.Success) {

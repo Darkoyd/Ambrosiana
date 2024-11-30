@@ -8,13 +8,10 @@ import com.example.ambrosianaapp.ui.theme.AmbrosianaAppTheme
 @Composable
 fun LoginScreenDefaultPreview() {
     AmbrosianaAppTheme {
-        LoginScreen(
-            viewModel = LoginViewModel().apply {
-                email = "user@example.com"
-                password = "password123"
-            },
-            onLoginSuccess = {}
-        )
+        LoginScreen(viewModel = LoginViewModel().apply {
+            email = "user@example.com"
+            password = "password123"
+        }, onLoginSuccess = {})
     }
 }
 
@@ -22,14 +19,11 @@ fun LoginScreenDefaultPreview() {
 @Composable
 fun LoginScreenLoadingPreview() {
     AmbrosianaAppTheme {
-        LoginScreen(
-            viewModel = LoginViewModel().apply {
-                email = "user@example.com"
-                password = "password123"
-                isLoading = true
-            },
-            onLoginSuccess = {}
-        )
+        LoginScreen(viewModel = LoginViewModel().apply {
+            email = "user@example.com"
+            password = "password123"
+            isLoading = true
+        }, onLoginSuccess = {})
     }
 }
 
@@ -37,14 +31,11 @@ fun LoginScreenLoadingPreview() {
 @Composable
 fun LoginScreenErrorPreview() {
     AmbrosianaAppTheme {
-        LoginScreen(
-            viewModel = LoginViewModel().apply {
-                email = "user@example.com"
-                password = "password123"
-                errorMessage = "Invalid credentials"
-            },
-            onLoginSuccess = {}
-        )
+        LoginScreen(viewModel = LoginViewModel().apply {
+            email = "user@example.com"
+            password = "password123"
+            errorMessage = "Invalid credentials"
+        }, onLoginSuccess = {})
     }
 }
 
@@ -53,20 +44,17 @@ fun LoginScreenErrorPreview() {
 @Composable
 fun SignUpScreenInitialPreview() {
     AmbrosianaAppTheme {
-        SignUpScreen(
-            viewModel = SignUpViewModel().apply {
-                email = "user@example.com"
-                password = "password123"
-                username = "johnsmith"
-                firstName = "John"
-                lastName = "Smith"
-                address = "123 Main St, City, Country"
-                phone = "+1 (555) 123-4567"
-                confirmPassword = "password123"
-                currentState = SignUpState.Initial
-            },
-            onSignUpSuccess = {}
-        )
+        SignUpScreen(viewModel = SignUpViewModel().apply {
+            email = "user@example.com"
+            password = "password123"
+            username = "johnsmith"
+            firstName = "John"
+            lastName = "Smith"
+            address = "123 Main St, City, Country"
+            phone = "+1 (555) 123-4567"
+            confirmPassword = "password123"
+            currentState = SignUpState.Initial
+        }, onSignUpSuccess = {})
     }
 }
 
@@ -74,20 +62,17 @@ fun SignUpScreenInitialPreview() {
 @Composable
 fun SignUpScreenLoadingPreview() {
     AmbrosianaAppTheme {
-        SignUpScreen(
-            viewModel = SignUpViewModel().apply {
-                email = "user@example.com"
-                password = "password123"
-                username = "johnsmith"
-                firstName = "John"
-                lastName = "Smith"
-                address = "123 Main St, City, Country"
-                phone = "+1 (555) 123-4567"
-                confirmPassword = "password123"
-                currentState = SignUpState.Loading
-            },
-            onSignUpSuccess = {}
-        )
+        SignUpScreen(viewModel = SignUpViewModel().apply {
+            email = "user@example.com"
+            password = "password123"
+            username = "johnsmith"
+            firstName = "John"
+            lastName = "Smith"
+            address = "123 Main St, City, Country"
+            phone = "+1 (555) 123-4567"
+            confirmPassword = "password123"
+            currentState = SignUpState.Loading
+        }, onSignUpSuccess = {})
     }
 }
 
@@ -95,20 +80,17 @@ fun SignUpScreenLoadingPreview() {
 @Composable
 fun SignUpScreenErrorPreview() {
     AmbrosianaAppTheme {
-        SignUpScreen(
-            viewModel = SignUpViewModel().apply {
-                email = "user@example.com"
-                password = "password123"
-                username = "johnsmith"
-                firstName = "John"
-                lastName = "Smith"
-                address = "123 Main St, City, Country"
-                phone = "+1 (555) 123-4567"
-                confirmPassword = "different_password"
-                currentState = SignUpState.Error("Passwords do not match")
-            },
-            onSignUpSuccess = {}
-        )
+        SignUpScreen(viewModel = SignUpViewModel().apply {
+            email = "user@example.com"
+            password = "password123"
+            username = "johnsmith"
+            firstName = "John"
+            lastName = "Smith"
+            address = "123 Main St, City, Country"
+            phone = "+1 (555) 123-4567"
+            confirmPassword = "different_password"
+            currentState = SignUpState.Error("Passwords do not match")
+        }, onSignUpSuccess = {})
     }
 }
 
@@ -116,21 +98,18 @@ fun SignUpScreenErrorPreview() {
 @Composable
 fun SignUpScreenConfirmationPreview() {
     AmbrosianaAppTheme {
-        SignUpScreen(
-            viewModel = SignUpViewModel().apply {
-                email = "user@example.com"
-                password = "password123"
-                username = "johnsmith"
-                firstName = "John"
-                lastName = "Smith"
-                address = "123 Main St, City, Country"
-                phone = "+1 (555) 123-4567"
-                confirmPassword = "password123"
-                confirmationCode = "123456"
-                currentState = SignUpState.WaitingForConfirmation
-            },
-            onSignUpSuccess = {}
-        )
+        SignUpScreen(viewModel = SignUpViewModel().apply {
+            email = "user@example.com"
+            password = "password123"
+            username = "johnsmith"
+            firstName = "John"
+            lastName = "Smith"
+            address = "123 Main St, City, Country"
+            phone = "+1 (555) 123-4567"
+            confirmPassword = "password123"
+            confirmationCode = "123456"
+            currentState = SignUpState.WaitingForConfirmation
+        }, onSignUpSuccess = {})
     }
 }
 
@@ -138,46 +117,37 @@ fun SignUpScreenConfirmationPreview() {
 @Composable
 fun SignUpScreenConfirmationErrorPreview() {
     AmbrosianaAppTheme {
-        SignUpScreen(
-            viewModel = SignUpViewModel().apply {
-                email = "user@example.com"
-                password = "password123"
-                username = "johnsmith"
-                firstName = "John"
-                lastName = "Smith"
-                address = "123 Main St, City, Country"
-                phone = "+1 (555) 123-4567"
-                confirmPassword = "password123"
-                confirmationCode = "123456"
-                currentState = SignUpState.Error("Invalid confirmation code")
-            },
-            onSignUpSuccess = {}
-        )
+        SignUpScreen(viewModel = SignUpViewModel().apply {
+            email = "user@example.com"
+            password = "password123"
+            username = "johnsmith"
+            firstName = "John"
+            lastName = "Smith"
+            address = "123 Main St, City, Country"
+            phone = "+1 (555) 123-4567"
+            confirmPassword = "password123"
+            confirmationCode = "123456"
+            currentState = SignUpState.Error("Invalid confirmation code")
+        }, onSignUpSuccess = {})
     }
 }
 
 // Device Preview Annotations for different screen sizes
 @Preview(
-    name = "Phone Portrait",
-    device = "spec:width=360dp,height=640dp,dpi=480"
+    name = "Phone Portrait", device = "spec:width=360dp,height=640dp,dpi=480"
 )
 @Preview(
-    name = "Phone Landscape",
-    device = "spec:width=640dp,height=360dp,dpi=480"
+    name = "Phone Landscape", device = "spec:width=640dp,height=360dp,dpi=480"
 )
 @Preview(
-    name = "Tablet",
-    device = "spec:width=1280dp,height=800dp,dpi=480"
+    name = "Tablet", device = "spec:width=1280dp,height=800dp,dpi=480"
 )
 @Composable
 fun AuthScreensDevicePreview() {
     AmbrosianaAppTheme {
-        LoginScreen(
-            viewModel = LoginViewModel().apply {
-                email = "user@example.com"
-                password = "password123"
-            },
-            onLoginSuccess = {}
-        )
+        LoginScreen(viewModel = LoginViewModel().apply {
+            email = "user@example.com"
+            password = "password123"
+        }, onLoginSuccess = {})
     }
 }

@@ -1,11 +1,9 @@
 package com.example.ambrosianaapp.library
 
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import aws.smithy.kotlin.runtime.io.IOException
-import com.amplifyframework.analytics.AnalyticsEvent
 import com.amplifyframework.annotations.InternalAmplifyApi
 import com.amplifyframework.api.ApiException
 import com.amplifyframework.api.graphql.model.ModelQuery
@@ -18,14 +16,13 @@ import com.amplifyframework.datastore.generated.model.UserLibraryPath
 import com.amplifyframework.kotlin.core.Amplify
 import com.example.ambrosianaapp.analytics.AmbrosianaAnalytics
 import com.example.ambrosianaapp.auth.AmplifyAuthManager
-import com.example.ambrosianaapp.components.rememberToastState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 
-class LibraryViewModel (
+class LibraryViewModel(
     private val authManager: AmplifyAuthManager = AmplifyAuthManager()
 ) : ViewModel() {
     companion object {
@@ -84,8 +81,7 @@ class LibraryViewModel (
                             bookx.let {
                                 authorx?.let { it1 ->
                                     AuthorUiModel(
-                                        id = it1.id,
-                                        name = authorx.name
+                                        id = it1.id, name = authorx.name
                                     )
                                 }?.let { it2 ->
                                     BookUiModel(
@@ -117,35 +113,33 @@ class LibraryViewModel (
     }
 
 
-    private suspend fun fetchUserLibrary(userId: String): UserLibrary? =
-        supervisorScope {
-            try {
-                Log.d(TAG, "Querying for library with userId: $userId")
-                val response = Amplify.API.query(
-                    ModelQuery.list(
-                        UserLibrary::class.java,
-                        UserLibrary.USER.eq(userId)
-                    )
+    private suspend fun fetchUserLibrary(userId: String): UserLibrary? = supervisorScope {
+        try {
+            Log.d(TAG, "Querying for library with userId: $userId")
+            val response = Amplify.API.query(
+                ModelQuery.list(
+                    UserLibrary::class.java, UserLibrary.USER.eq(userId)
                 )
+            )
 
-                if (response.data == null) {
-                    Log.e(TAG, "Query response data is null")
-                    throw IOException("Failed to fetch library: response data is null")
-                }
-
-                val library = response.data.firstOrNull()
-                if (library != null) {
-                    Log.d(TAG, "Found library with id: ${library.id}")
-                } else {
-                    Log.d(TAG, "No library found for user")
-                }
-
-                library
-            } catch (e: ApiException) {
-                Log.e(TAG, "Query failed", e)
-                throw IOException("Failed to fetch library", e)
+            if (response.data == null) {
+                Log.e(TAG, "Query response data is null")
+                throw IOException("Failed to fetch library: response data is null")
             }
+
+            val library = response.data.firstOrNull()
+            if (library != null) {
+                Log.d(TAG, "Found library with id: ${library.id}")
+            } else {
+                Log.d(TAG, "No library found for user")
+            }
+
+            library
+        } catch (e: ApiException) {
+            Log.e(TAG, "Query failed", e)
+            throw IOException("Failed to fetch library", e)
         }
+    }
 
     private suspend fun fetchBooksForLibrary(libraryId: String): List<BookLibrary>? =
         supervisorScope {
@@ -153,8 +147,7 @@ class LibraryViewModel (
             try {
                 val response = Amplify.API.query(
                     ModelQuery.get<UserLibrary, UserLibraryPath>(
-                        UserLibrary::class.java,
-                        libraryId
+                        UserLibrary::class.java, libraryId
                     ) { libraryPath ->
                         includes(
                             libraryPath.books.book.author,
@@ -162,8 +155,7 @@ class LibraryViewModel (
                             libraryPath.books.book.ratings,
                             libraryPath.books.book.listings
                         )
-                    }
-                )
+                    })
 
                 if (response.data == null) {
                     throw IOException("Failed to fetch books: response data is null")
@@ -174,9 +166,7 @@ class LibraryViewModel (
 
                 val duration = System.currentTimeMillis() - start
                 AmbrosianaAnalytics.trackApiCall(
-                    endpoint = "fetchBooksForLibrary",
-                    isSuccess = true,
-                    durationMs = duration
+                    endpoint = "fetchBooksForLibrary", isSuccess = true, durationMs = duration
                 )
                 books
             } catch (e: ApiException) {
@@ -205,9 +195,7 @@ class LibraryViewModel (
         val errorState = when (error) {
             is IOException -> LibraryUiState.Error.Network { loadLibrary() }
             else -> LibraryUiState.Error.Generic(
-                message = error.message ?: "Unknown error occurred",
-                retry = { loadLibrary() }
-            )
+                message = error.message ?: "Unknown error occurred", retry = { loadLibrary() })
         }
 
         if (_uiState.value !is LibraryUiState.Success) {

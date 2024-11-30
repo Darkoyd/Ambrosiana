@@ -22,8 +22,7 @@ object AmbrosianaAnalytics {
         properties: Map<String, String>? = emptyMap()
     ) {
         try {
-            val eventBuilder = AnalyticsEvent.builder()
-                .name(EVENT_TYPE_API)
+            val eventBuilder = AnalyticsEvent.builder().name(EVENT_TYPE_API)
                 .addProperty(ENDPOINT_PROPERTY, endpoint)
                 .addProperty(STATUS_PROPERTY, if (isSuccess) "success" else "failure")
                 .addProperty(DURATION_PROPERTY, "$durationMs")
@@ -51,8 +50,7 @@ object AmbrosianaAnalytics {
 
     fun recordAppEvent(eventName: String, properties: Map<String, String> = emptyMap()) {
         try {
-            val eventBuilder = AnalyticsEvent.builder()
-                .name(eventName)
+            val eventBuilder = AnalyticsEvent.builder().name(eventName)
 
             properties.forEach { (key, value) ->
                 eventBuilder.addProperty(key, value)

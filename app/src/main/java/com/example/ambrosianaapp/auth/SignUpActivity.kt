@@ -1,18 +1,27 @@
 package com.example.ambrosianaapp.auth
 
 import android.content.Intent
-import android.os.Bundle
 import android.util.Log
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -36,16 +45,14 @@ class SignUpActivity : AuthBaseActivity() {
         setContent {
             AmbrosianaAppTheme {
                 SignUpScreen(
-                    viewModel = viewModel,
-                    onSignUpSuccess = {
+                    viewModel = viewModel, onSignUpSuccess = {
                         Log.d("SignUpActivity", "SignUp success callback triggered")
                         val intent = Intent(this, LibraryActivity::class.java).apply {
                             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         }
                         startActivity(intent)
                         finish()
-                    }
-                )
+                    })
             }
         }
     }
@@ -53,8 +60,7 @@ class SignUpActivity : AuthBaseActivity() {
 
 @Composable
 fun SignUpScreen(
-    viewModel: SignUpViewModel,
-    onSignUpSuccess: () -> Unit
+    viewModel: SignUpViewModel, onSignUpSuccess: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -81,24 +87,20 @@ fun SignUpScreen(
 @Composable
 private fun Header(modifier: Modifier, state: SignUpState) {
     Box(
-        modifier = modifier,
-        contentAlignment = Alignment.CenterStart
+        modifier = modifier, contentAlignment = Alignment.CenterStart
     ) {
         Text(
             text = when (state) {
                 SignUpState.WaitingForConfirmation -> "Confirm Your Email"
                 else -> "Create Your Account"
-            },
-            style = MaterialTheme.typography.displayMedium,
-            color = AmbrosianaColor.Black
+            }, style = MaterialTheme.typography.displayMedium, color = AmbrosianaColor.Black
         )
     }
 }
 
 @Composable
 private fun ConfirmationForm(
-    viewModel: SignUpViewModel,
-    onConfirmationSuccess: () -> Unit
+    viewModel: SignUpViewModel, onConfirmationSuccess: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -123,8 +125,7 @@ private fun ConfirmationForm(
             label = "Confirmation Code",
             modifier = Modifier.padding(52.dp, 0.dp),
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done
+                keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
             )
         )
 
@@ -139,6 +140,7 @@ private fun ConfirmationForm(
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
+
             else -> {}
         }
 
@@ -155,8 +157,7 @@ private fun ConfirmationForm(
 
 @Composable
 private fun SignUpForm(
-    viewModel: SignUpViewModel,
-    modifier: Modifier
+    viewModel: SignUpViewModel, modifier: Modifier
 ) {
     val showPassword = remember { mutableStateOf(false) }
 
@@ -219,8 +220,7 @@ private fun SignUpForm(
             modifier = Modifier.padding(52.dp, 0.dp),
             visualTransformation = if (showPassword.value) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Done
+                keyboardType = KeyboardType.Password, imeAction = ImeAction.Done
             ),
             trailingIcon = {
                 IconButton(onClick = { showPassword.value = !showPassword.value }) {
@@ -230,8 +230,7 @@ private fun SignUpForm(
                         tint = AmbrosianaColor.Green
                     )
                 }
-            }
-        )
+            })
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -242,8 +241,7 @@ private fun SignUpForm(
             modifier = Modifier.padding(52.dp, 0.dp),
             visualTransformation = if (showPassword.value) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Done
+                keyboardType = KeyboardType.Password, imeAction = ImeAction.Done
             ),
             trailingIcon = {
                 IconButton(onClick = { showPassword.value = !showPassword.value }) {
@@ -253,8 +251,7 @@ private fun SignUpForm(
                         tint = AmbrosianaColor.Green
                     )
                 }
-            }
-        )
+            })
 
         // Error message
         when (viewModel.currentState) {
@@ -265,6 +262,7 @@ private fun SignUpForm(
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
+
             else -> {}
         }
 

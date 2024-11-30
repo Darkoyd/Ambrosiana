@@ -1,14 +1,27 @@
-import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -18,9 +31,7 @@ import androidx.compose.ui.unit.sp
 import com.example.ambrosianaapp.ui.theme.AmbrosianaColor
 
 data class NavigationItem(
-    val title: String,
-    val icon: @Composable () -> Unit,
-    val onClick: () -> Unit
+    val title: String, val icon: @Composable () -> Unit, val onClick: () -> Unit
 )
 
 @Composable
@@ -53,18 +64,15 @@ fun AmbrosianaBottomNavigation(
             title = "Search",
             icon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
             onClick = onSearchClick
-        ),
-        NavigationItem(
+        ), NavigationItem(
             title = "Post",
             icon = { Icon(Icons.Filled.Share, contentDescription = "Post") },
             onClick = onPostClick
-        ),
-        NavigationItem(
+        ), NavigationItem(
             title = "Library",
             icon = { Icon(Icons.Filled.Person, contentDescription = "Library") },
             onClick = onLibraryClick
-        ),
-        NavigationItem(
+        ), NavigationItem(
             title = "Notifications",
             icon = { Icon(Icons.Filled.Notifications, contentDescription = "Notifications") },
             onClick = onNotificationsClick
@@ -85,9 +93,7 @@ fun AmbrosianaBottomNavigation(
         ) {
             navigationItems.forEach { item ->
                 NavigationButton(
-                    item = item,
-                    isExpanded = isExpanded,
-                    modifier = Modifier.weight(1f)
+                    item = item, isExpanded = isExpanded, modifier = Modifier.weight(1f)
                 )
             }
         }
@@ -96,9 +102,7 @@ fun AmbrosianaBottomNavigation(
 
 @Composable
 private fun NavigationButton(
-    item: NavigationItem,
-    isExpanded: Boolean,
-    modifier: Modifier = Modifier
+    item: NavigationItem, isExpanded: Boolean, modifier: Modifier = Modifier
 ) {
     Button(
         onClick = item.onClick,
@@ -106,8 +110,7 @@ private fun NavigationButton(
             .fillMaxHeight()
             .padding(4.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = AmbrosianaColor.Primary,
-            contentColor = AmbrosianaColor.Green
+            containerColor = AmbrosianaColor.Primary, contentColor = AmbrosianaColor.Green
         ),
         contentPadding = PaddingValues(4.dp)
     ) {

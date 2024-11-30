@@ -25,9 +25,11 @@ sealed class SearchUiState {
         val canLoadMore: Boolean = true,
         val query: String = ""
     ) : SearchUiState()
+
     sealed class Error : SearchUiState() {
         data class Network(val retry: () -> Unit) : Error()
         data class Generic(val message: String, val retry: () -> Unit) : Error()
     }
+
     data object Empty : SearchUiState()
 }

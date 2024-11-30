@@ -19,17 +19,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -56,12 +52,10 @@ class MainActivity : ComponentActivity() {
 
                 WelcomeScreen(
                     onLoginClick = {
-                        startActivity(Intent(this, LoginActivity::class.java))
-                    },
-                    onSignUpClick = {
-                        startActivity(Intent(this, SignUpActivity::class.java))
-                    },
-                    isOnline = isOnline
+                    startActivity(Intent(this, LoginActivity::class.java))
+                }, onSignUpClick = {
+                    startActivity(Intent(this, SignUpActivity::class.java))
+                }, isOnline = isOnline
                 )
             }
         }
@@ -69,13 +63,9 @@ class MainActivity : ComponentActivity() {
 }
 
 
-
-
 @Composable
 fun WelcomeScreen(
-    onLoginClick: () -> Unit,
-    onSignUpClick: () -> Unit,
-    isOnline: Boolean
+    onLoginClick: () -> Unit, onSignUpClick: () -> Unit, isOnline: Boolean
 ) {
     val scrollState = rememberScrollState()
 
@@ -109,8 +99,7 @@ private fun Header(
     modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = modifier,
-        contentAlignment = Alignment.CenterStart
+        modifier = modifier, contentAlignment = Alignment.CenterStart
     ) {
         Text(
             text = "Welcome to Ambrosiana!",
@@ -167,8 +156,7 @@ private fun MainContent(
         if (!isOnline) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "No internet connection",
-                style = MaterialTheme.typography.labelLarge
+                text = "No internet connection", style = MaterialTheme.typography.labelLarge
             )
         }
     }
@@ -186,9 +174,8 @@ fun ConnectivityManager.observeConnectivity(): Flow<Boolean> = callbackFlow {
         }
     }
 
-    val request = NetworkRequest.Builder()
-        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-        .build()
+    val request =
+        NetworkRequest.Builder().addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build()
 
     registerNetworkCallback(request, callback)
 
@@ -202,9 +189,7 @@ fun ConnectivityManager.observeConnectivity(): Flow<Boolean> = callbackFlow {
 @Composable
 fun WelcomeScreenPreview() {
     WelcomeScreen(
-        onLoginClick = {},
-        onSignUpClick = {},
-        isOnline = true
+        onLoginClick = {}, onSignUpClick = {}, isOnline = true
     )
 }
 
@@ -212,8 +197,6 @@ fun WelcomeScreenPreview() {
 @Composable
 fun WelcomeScreenOfflinePreview() {
     WelcomeScreen(
-        onLoginClick = {},
-        onSignUpClick = {},
-        isOnline = false
+        onLoginClick = {}, onSignUpClick = {}, isOnline = false
     )
 }

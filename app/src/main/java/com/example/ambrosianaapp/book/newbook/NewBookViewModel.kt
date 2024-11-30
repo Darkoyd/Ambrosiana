@@ -7,9 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.amplifyframework.analytics.AnalyticsEvent
 import com.amplifyframework.api.ApiException
 import com.amplifyframework.api.graphql.model.ModelMutation
 import com.amplifyframework.api.graphql.model.ModelQuery
@@ -124,20 +122,19 @@ class NewBookViewModel(application: Application) : AndroidViewModel(application)
                             Log.d("NewBookViewModel", "Uploaded image with key: $key")
                         }
                     } catch (e: Exception) {
-                        Log.w("NewBookViewModel", "Failed to upload image, continuing without image", e)
+                        Log.w(
+                            "NewBookViewModel",
+                            "Failed to upload image, continuing without image",
+                            e
+                        )
                         null
                     }
                 }
 
                 // Create the book
-                val book = Book.builder()
-                    .title(title)
-                    .isbn(isbn)
-                    .author(authorEntity)
-                    .apply {
+                val book = Book.builder().title(title).isbn(isbn).author(authorEntity).apply {
                         imageKey?.let { thumbnail(it) }
-                    }
-                    .build()
+                    }.build()
 
                 Amplify.API.mutate(ModelMutation.create(book))
                 Log.d("NewBookViewModel", "Successfully created book: ${book.title}")
@@ -187,8 +184,7 @@ class NewBookViewModel(application: Application) : AndroidViewModel(application)
 
             // Upload the temporary file
             val upload = Amplify.Storage.uploadFile(
-                StoragePath.fromString("images/$key"),
-                tempFile
+                StoragePath.fromString("images/$key"), tempFile
             )
 
             // Wait for the result

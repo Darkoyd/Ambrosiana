@@ -26,26 +26,18 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun AmbrosianaToast(
-    message: String,
-    isVisible: Boolean,
-    onDismiss: () -> Unit,
-    durationMillis: Long = 2000
+    message: String, isVisible: Boolean, onDismiss: () -> Unit, durationMillis: Long = 2000
 ) {
     val density = LocalDensity.current
 
     Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.BottomCenter
+        modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter
     ) {
-        AnimatedVisibility(
-            visible = isVisible,
-            enter = fadeIn() + slideInVertically {
-                with(density) { 50.dp.roundToPx() }
-            },
-            exit = fadeOut() + slideOutVertically {
-                with(density) { 50.dp.roundToPx() }
-            }
-        ) {
+        AnimatedVisibility(visible = isVisible, enter = fadeIn() + slideInVertically {
+            with(density) { 50.dp.roundToPx() }
+        }, exit = fadeOut() + slideOutVertically {
+            with(density) { 50.dp.roundToPx() }
+        }) {
             Surface(
                 modifier = Modifier.padding(16.dp),
                 shape = RoundedCornerShape(8.dp),

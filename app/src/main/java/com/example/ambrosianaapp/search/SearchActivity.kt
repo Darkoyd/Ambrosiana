@@ -1,23 +1,47 @@
 package com.example.ambrosianaapp.search
 
+import AmbrosianaBottomNavigation
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.ambrosianaapp.ui.theme.AmbrosianaAppTheme
-import AmbrosianaBottomNavigation
-import android.content.Intent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -30,6 +54,7 @@ import com.example.ambrosianaapp.components.AmbrosianaToast
 import com.example.ambrosianaapp.components.BookThumbnail
 import com.example.ambrosianaapp.components.NavigationUtils
 import com.example.ambrosianaapp.components.rememberToastState
+import com.example.ambrosianaapp.ui.theme.AmbrosianaAppTheme
 import com.example.ambrosianaapp.ui.theme.AmbrosianaColor
 import com.example.ambrosianaapp.ui.theme.AppFont
 
@@ -41,21 +66,15 @@ class SearchActivity : ComponentActivity() {
         setContent {
             AmbrosianaAppTheme {
 
-                SearchScreen(
-                    viewModel = viewModel,
-                    onBookClick = { book ->
-                        // TODO: Navigate to book details
-                    },
-                    isExpanded = false,
-                    onNewBookClick = {
-                        startActivity(Intent(this, NewBookActivity::class.java))
-                    }
-                )
+                SearchScreen(viewModel = viewModel, onBookClick = { book ->
+                    // TODO: Navigate to book details
+                }, isExpanded = false, onNewBookClick = {
+                    startActivity(Intent(this, NewBookActivity::class.java))
+                })
             }
         }
     }
 }
-
 
 
 @Composable
@@ -97,6 +116,7 @@ fun SearchScreen(
                     onLoadMore = viewModel::loadMore,
                     onBookClick = onBookClick
                 )
+
                 is SearchUiState.Error -> ErrorState(state)
                 SearchUiState.Empty -> EmptyState(searchQuery)
                 SearchUiState.Initial -> {}
@@ -111,8 +131,7 @@ fun SearchScreen(
             contentColor = AmbrosianaColor.White
         ) {
             Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Add new book"
+                imageVector = Icons.Default.Add, contentDescription = "Add new book"
             )
         }
 
@@ -122,23 +141,25 @@ fun SearchScreen(
             isExpanded = isExpanded,
             onSearchClick = { /* Already on search */ },
             onPostClick = { toastState.show("Posts feature coming soon!") },
-            onLibraryClick = { NavigationUtils.navigateToScreen(context, NavigationUtils.Screen.SEARCH, NavigationUtils.Screen.LIBRARY ) },
-            onNotificationsClick = { toastState.show("Notifications feature coming soon!") }
-        )
+            onLibraryClick = {
+                NavigationUtils.navigateToScreen(
+                    context,
+                    NavigationUtils.Screen.SEARCH,
+                    NavigationUtils.Screen.LIBRARY
+                )
+            },
+            onNotificationsClick = { toastState.show("Notifications feature coming soon!") })
 
         AmbrosianaToast(
             message = toastState.message,
             isVisible = toastState.isVisible,
-            onDismiss = { toastState.hide() }
-        )
+            onDismiss = { toastState.hide() })
     }
 }
 
 @Composable
 private fun SearchHeader(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier
+    query: String, onQueryChange: (String) -> Unit, modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
@@ -163,8 +184,7 @@ private fun SearchHeader(
                     contentDescription = null,
                     tint = AmbrosianaColor.Green
                 )
-            }
-        )
+            })
     }
 }
 
@@ -181,22 +201,15 @@ private fun SearchBookGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier,
         contentPadding = PaddingValues(
-            start = 8.dp,
-            end = 8.dp,
-            top = 8.dp,
-            bottom = 80.dp // Account for bottom navigation
+            start = 8.dp, end = 8.dp, top = 8.dp, bottom = 80.dp // Account for bottom navigation
         ),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(
-            items = books,
-            key = { it.id }
-        ) { book ->
+            items = books, key = { it.id }) { book ->
             SearchBookCard(
-                book = book,
-                onClick = { onBookClick(book) }
-            )
+                book = book, onClick = { onBookClick(book) })
         }
 
         if (isLoadingMore) {
@@ -217,22 +230,16 @@ private fun SearchBookGrid(
 
 @Composable
 fun SearchBookCard(
-    book: SearchBookUiModel,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    book: SearchBookUiModel, onClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 300.dp),
-        colors = CardDefaults.cardColors(
+            .heightIn(min = 300.dp), colors = CardDefaults.cardColors(
             containerColor = AmbrosianaColor.Secondary,
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp,
-            pressedElevation = 4.dp
-        ),
-        onClick = onClick
+        ), elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp, pressedElevation = 4.dp
+        ), onClick = onClick
     ) {
         Column(
             modifier = Modifier
@@ -250,9 +257,7 @@ fun SearchBookCard(
 
             // Thumbnail
             BookThumbnail(
-                thumbnailKey = book.thumbnail,
-                modifier = Modifier
-                    .fillMaxWidth()
+                thumbnailKey = book.thumbnail, modifier = Modifier.fillMaxWidth()
             )
 
             // Author
@@ -398,10 +403,8 @@ private fun EmptyState(searchQuery: String) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = if (searchQuery.isBlank())
-                "Search for books to get started"
-            else
-                "No books found for \"$searchQuery\"",
+            text = if (searchQuery.isBlank()) "Search for books to get started"
+            else "No books found for \"$searchQuery\"",
             style = MaterialTheme.typography.headlineSmall,
             textAlign = TextAlign.Center,
             color = AmbrosianaColor.Black
@@ -431,9 +434,7 @@ private fun ErrorState(error: SearchUiState.Error) {
             text = when (error) {
                 is SearchUiState.Error.Network -> "No internet connection"
                 is SearchUiState.Error.Generic -> error.message
-            },
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center
+            }, style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -444,8 +445,7 @@ private fun ErrorState(error: SearchUiState.Error) {
                     is SearchUiState.Error.Network -> error.retry()
                     is SearchUiState.Error.Generic -> error.retry()
                 }
-            },
-            colors = ButtonDefaults.buttonColors(
+            }, colors = ButtonDefaults.buttonColors(
                 containerColor = AmbrosianaColor.Green
             )
         ) {

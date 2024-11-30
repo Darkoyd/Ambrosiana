@@ -1,11 +1,23 @@
 package com.example.ambrosianaapp.auth
 
+import android.net.http.NetworkException
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresExtension
+import aws.sdk.kotlin.services.cognitoidentityprovider.model.ExpiredCodeException
 import com.amplifyframework.auth.AuthException
 import com.amplifyframework.auth.AuthUser
-import com.amplifyframework.auth.AuthUserAttribute
+import com.amplifyframework.auth.cognito.exceptions.invalidstate.SignedInException
+import com.amplifyframework.auth.cognito.exceptions.service.CodeMismatchException
+import com.amplifyframework.auth.cognito.exceptions.service.LimitExceededException
+import com.amplifyframework.auth.cognito.exceptions.service.TooManyRequestsException
+import com.amplifyframework.auth.cognito.exceptions.service.UserNotConfirmedException
+import com.amplifyframework.auth.cognito.exceptions.service.UserNotFoundException
+import com.amplifyframework.auth.exceptions.NotAuthorizedException
+import com.amplifyframework.auth.exceptions.ServiceException
 import com.amplifyframework.auth.options.AuthSignUpOptions
 import com.amplifyframework.kotlin.core.Amplify
+import com.example.ambrosianaapp.analytics.AmbrosianaAnalytics
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -13,7 +25,6 @@ class AmplifyAuthManager {
     companion object {
         private const val TAG = "AmplifyAuthManager"
 
-        // Log categories for better filtering
         private const val AUTH_SIGNUP = "AuthSignUp"
         private const val AUTH_SIGNIN = "AuthSignIn"
         private const val AUTH_CONFIRM = "AuthConfirm"
@@ -28,7 +39,7 @@ class AmplifyAuthManager {
     ): Result<Boolean> = runCatching {
         Log.d(TAG, "$AUTH_SIGNUP: Attempting signup with custom options for email: ${email.masked()}")
 
-        val result = Amplify.Auth.signUp(email, password, options)
+        Amplify.Auth.signUp(email, password, options)
         Log.i(TAG, "$AUTH_SIGNUP: Successfully initiated signup with options for email: ${email.masked()}")
         true
     }.onFailure { exception ->
@@ -42,19 +53,22 @@ class AmplifyAuthManager {
         Log.d(TAG, "$AUTH_CONFIRM: Attempting to confirm signup for email: ${email.masked()}")
 
         Amplify.Auth.confirmSignUp(email, confirmationCode)
+        AmbrosianaAnalytics.recordAppEvent(
+            eventName = "_userauth.sign_up"
+        )
         Log.i(TAG, "$AUTH_CONFIRM: Successfully confirmed signup for email: ${email.masked()}")
         true
     }.onFailure { exception ->
         when (exception) {
             is AuthException -> {
-                when (exception.cause?.message) {
-                    "CodeMismatchException" -> {
+                when (exception.cause) {
+                    is CodeMismatchException -> {
                         Log.w(TAG, "$AUTH_CONFIRM: Invalid confirmation code for email: ${email.masked()}")
                     }
-                    "ExpiredCodeException" -> {
+                    is ExpiredCodeException -> {
                         Log.w(TAG, "$AUTH_CONFIRM: Confirmation code expired for email: ${email.masked()}")
                     }
-                    "LimitExceededException" -> {
+                    is LimitExceededException -> {
                         Log.w(TAG, "$AUTH_CONFIRM: Too many attempts. Please try again later: ${email.masked()}")
                     }
                     else -> {
@@ -68,6 +82,7 @@ class AmplifyAuthManager {
         }
     }
 
+    @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
     suspend fun signIn(
         email: String,
         password: String
@@ -77,24 +92,27 @@ class AmplifyAuthManager {
         Amplify.Auth.signIn(email, password)
         val currentUser = Amplify.Auth.getCurrentUser()
         Log.i(TAG, "$AUTH_SIGNIN: Successfully signed in user: ${email.masked()}")
+        AmbrosianaAnalytics.recordAppEvent(
+            eventName = "_userauth.sign_in"
+        )
         currentUser
     }.onFailure { exception ->
         when (exception) {
             is AuthException -> {
-                when (exception.cause?.message) {
-                    "SignedInException" -> {
+                when (exception.cause) {
+                    is SignedInException -> {
                         signOutAndRetry(email, password)
                     }
-                    "NotAuthorizedException" -> {
+                    is NotAuthorizedException -> {
                         Log.w(TAG, "$AUTH_SIGNIN: Invalid credentials for email: ${email.masked()}")
                     }
-                    "UserNotConfirmedException" -> {
+                    is UserNotConfirmedException -> {
                         Log.w(TAG, "$AUTH_SIGNIN: User not confirmed: ${email.masked()}")
                     }
-                    "UserNotFoundException" -> {
+                    is UserNotFoundException -> {
                         Log.w(TAG, "$AUTH_SIGNIN: User not found: ${email.masked()}")
                     }
-                    "TooManyRequestsException" -> {
+                    is TooManyRequestsException -> {
                         Log.w(TAG, "$AUTH_SIGNIN: Too many attempts. Please try again later: ${email.masked()}")
                     }
                     else -> {
@@ -104,6 +122,12 @@ class AmplifyAuthManager {
             }
             else -> {
                 Log.e(TAG, "$AUTH_SIGNIN: Unexpected error during signin for email: ${email.masked()}", exception)
+                logAuthError(
+                    operation = AUTH_SIGNIN,
+                    action = "sign in",
+                    email = email,
+                    exception = exception,
+                )
             }
         }
     }
@@ -125,11 +149,11 @@ class AmplifyAuthManager {
     }.onFailure { exception ->
         when (exception) {
             is AuthException -> {
-                when (exception.cause?.message) {
-                    "LimitExceededException" -> {
+                when (exception.cause) {
+                    is LimitExceededException -> {
                         Log.w(TAG, "$AUTH_SIGNUP: Too many code resend attempts for email: ${email.masked()}")
                     }
-                    "UserNotFoundException" -> {
+                    is UserNotFoundException -> {
                         Log.w(TAG, "$AUTH_SIGNUP: User not found when resending code: ${email.masked()}")
                     }
                     else -> {
@@ -148,6 +172,7 @@ class AmplifyAuthManager {
 
         Amplify.Auth.signOut()
         Log.i(TAG, "$AUTH_SIGNOUT: Successfully signed out user")
+
         true
     }.onFailure { exception ->
         Log.e(TAG, "$AUTH_SIGNOUT: Error during sign out", exception)
@@ -166,14 +191,18 @@ class AmplifyAuthManager {
         }
     }
 
+    @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
     private fun logAuthError(operation: String, action: String, email: String, exception: Throwable) {
+        AmbrosianaAnalytics.recordAppEvent(
+            eventName = "_userauth.auth_fail"
+        )
         when (exception) {
             is AuthException -> {
-                when (exception.cause?.message) {
-                    "ServiceException" -> {
+                when (exception.cause) {
+                    is ServiceException -> {
                         Log.e(TAG, "$operation: Service error during $action for email: ${email.masked()}", exception)
                     }
-                    "NetworkException" -> {
+                    is NetworkException -> {
                         Log.e(TAG, "$operation: Network error during $action for email: ${email.masked()}", exception)
                     }
                     else -> {
@@ -196,11 +225,10 @@ class AmplifyAuthManager {
 // Extension function to mask sensitive data in logs
 private fun String.masked(): String {
     return if (this.contains("@")) {
-        // Mask email addresses
         val parts = this.split("@")
         "${parts[0].take(2)}***@${parts[1]}"
     } else {
-        // Mask other sensitive strings
         "${this.take(2)}***${this.takeLast(2)}"
     }
 }
+

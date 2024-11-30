@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -50,12 +51,11 @@ fun NewBookScreen(
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
+    LocalContext.current
     val scrollState = rememberScrollState()
     val isLoading by viewModel.isLoading.collectAsState()
     val submissionState by viewModel.submissionState.collectAsState()
 
-    // Image picker launcher
     val pickMedia = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
@@ -93,7 +93,9 @@ fun NewBookScreen(
                 .padding(paddingValues)
                 .verticalScroll(scrollState)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             AmbrosianaTextField(
                 value = viewModel.title,
@@ -136,8 +138,8 @@ fun NewBookScreen(
                     style = MaterialTheme.typography.bodySmall
                 )
             }
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Image selection button
             AmbrosianaButton(
                 onClick = {
                     pickMedia.launch(
@@ -147,9 +149,7 @@ fun NewBookScreen(
                 text = if (viewModel.selectedImageUri != null) "Change Image" else "Select Image"
             )
 
-            // Selected image preview
             viewModel.selectedImageUri?.let { uri ->
-                // You might want to create a custom image preview component
                 Text("Image selected: ${uri.lastPathSegment}")
             }
 

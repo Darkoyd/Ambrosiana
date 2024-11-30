@@ -32,8 +32,8 @@ fun AmbrosianaBottomNavigation(
     onLibraryClick: () -> Unit,
     onNotificationsClick: () -> Unit
 ) {
-    val density = LocalDensity.current
-    val iconSize = 24.dp
+    LocalDensity.current
+    24.dp
 
     // Calculate the height based on screen width to maintain square buttons
     val screenWidth = LocalDensity.current.run {

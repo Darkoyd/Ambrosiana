@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ambrosianaapp.ui.theme.AmbrosianaAppTheme
 import AmbrosianaBottomNavigation
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -23,9 +24,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.ambrosianaapp.book.newbook.NewBookActivity
 import com.example.ambrosianaapp.components.AmbrosianaTextField
+import com.example.ambrosianaapp.components.AmbrosianaToast
 import com.example.ambrosianaapp.components.BookThumbnail
 import com.example.ambrosianaapp.components.NavigationUtils
+import com.example.ambrosianaapp.components.rememberToastState
 import com.example.ambrosianaapp.ui.theme.AmbrosianaColor
 import com.example.ambrosianaapp.ui.theme.AppFont
 
@@ -42,7 +46,10 @@ class SearchActivity : ComponentActivity() {
                     onBookClick = { book ->
                         // TODO: Navigate to book details
                     },
-                    isExpanded = false // You might want to make this configurable
+                    isExpanded = false,
+                    onNewBookClick = {
+                        startActivity(Intent(this, NewBookActivity::class.java))
+                    }
                 )
             }
         }
@@ -56,11 +63,14 @@ fun SearchScreen(
     viewModel: SearchViewModel,
     onBookClick: (SearchBookUiModel) -> Unit,
     isExpanded: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onNewBookClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var searchQuery by remember { mutableStateOf("") }
     val context = LocalContext.current
+    val toastState = rememberToastState()
+
 
     Box(modifier = modifier.fillMaxSize()) {
         Column(
@@ -92,15 +102,34 @@ fun SearchScreen(
                 SearchUiState.Initial -> {}
             }
         }
+        FloatingActionButton(
+            onClick = onNewBookClick,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 16.dp, bottom = 76.dp), // 76.dp to position above bottom nav
+            containerColor = AmbrosianaColor.Green,
+            contentColor = AmbrosianaColor.White
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Add new book"
+            )
+        }
 
         // Bottom Navigation
         AmbrosianaBottomNavigation(
             modifier = Modifier.align(Alignment.BottomCenter),
             isExpanded = isExpanded,
             onSearchClick = { /* Already on search */ },
-            onPostClick = { /* TODO */ },
+            onPostClick = { toastState.show("Posts feature coming soon!") },
             onLibraryClick = { NavigationUtils.navigateToScreen(context, NavigationUtils.Screen.SEARCH, NavigationUtils.Screen.LIBRARY ) },
-            onNotificationsClick = { /* TODO */ }
+            onNotificationsClick = { toastState.show("Notifications feature coming soon!") }
+        )
+
+        AmbrosianaToast(
+            message = toastState.message,
+            isVisible = toastState.isVisible,
+            onDismiss = { toastState.hide() }
         )
     }
 }

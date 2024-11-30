@@ -6,34 +6,61 @@ import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.example.ambrosianaapp.MainActivity
+import com.example.ambrosianaapp.components.AmbrosianaToast
+import com.example.ambrosianaapp.components.BookThumbnail
+import com.example.ambrosianaapp.components.NavigationUtils
+import com.example.ambrosianaapp.components.rememberToastState
 import com.example.ambrosianaapp.ui.theme.AmbrosianaAppTheme
 import com.example.ambrosianaapp.ui.theme.AmbrosianaColor
 import com.example.ambrosianaapp.ui.theme.AppFont
-import androidx.activity.viewModels
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.ui.platform.LocalContext
-import com.example.ambrosianaapp.book.newbook.NewBookActivity
-import com.example.ambrosianaapp.components.BookThumbnail
-import com.example.ambrosianaapp.components.NavigationUtils
+import kotlinx.coroutines.launch
 
 
 data class Book(
@@ -45,8 +72,20 @@ data class Book(
 class LibraryActivity : ComponentActivity() {
     private val viewModel: LibraryViewModel by viewModels()
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.navigateToMainActivity.collect { navigate ->
+                    if (navigate) {
+                        redirectToMain()
+                        viewModel.onNavHandled()
+                    }
+                }
+            }
+        }
         setContent {
             AmbrosianaAppTheme {
                 LibraryView(
@@ -55,12 +94,18 @@ class LibraryActivity : ComponentActivity() {
                         // We'll implement navigation to book details later
                     },
                     isExpanded = false,
-                    onNewBookClick = {
-                        startActivity(Intent(this, NewBookActivity::class.java))
+                    onSignOutClick = {
+                        viewModel.signOut()
                     }
                 )
             }
         }
+    }
+
+    private fun redirectToMain() {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
     }
 }
 
@@ -70,10 +115,11 @@ fun LibraryView(
     onBookClick: (BookUiModel) -> Unit,
     modifier: Modifier = Modifier,
     isExpanded: Boolean,
-    onNewBookClick: () -> Unit = {},
+    onSignOutClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val toastState = rememberToastState()
 
     Box(modifier = modifier.fillMaxSize()) {
         when (val state = uiState) {
@@ -90,7 +136,7 @@ fun LibraryView(
         }
 
         FloatingActionButton(
-            onClick = onNewBookClick,
+            onClick = onSignOutClick,
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(start = 16.dp, bottom = 76.dp), // 76.dp to position above bottom nav
@@ -98,8 +144,8 @@ fun LibraryView(
             contentColor = AmbrosianaColor.White
         ) {
             Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Add new book"
+                imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                contentDescription = "Sign Out"
             )
         }
 
@@ -109,11 +155,17 @@ fun LibraryView(
             onSearchClick = {
                 NavigationUtils.navigateToScreen(context, NavigationUtils.Screen.LIBRARY, NavigationUtils.Screen.SEARCH)
             },
-            onPostClick = { /* ... */ },
+            onPostClick = { toastState.show("Posts feature coming soon!") },
             onLibraryClick = { /* Nothing */ },
-            onNotificationsClick = { /* ... */ }
+            onNotificationsClick = { toastState.show("Notifications feature coming soon!") }
         )
     }
+
+    AmbrosianaToast(
+        message = toastState.message,
+        isVisible = toastState.isVisible,
+        onDismiss = {toastState.hide()}
+    )
 }
 
 @Composable

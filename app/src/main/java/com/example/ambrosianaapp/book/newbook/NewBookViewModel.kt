@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.amplifyframework.analytics.AnalyticsEvent
 import com.amplifyframework.api.ApiException
 import com.amplifyframework.api.graphql.model.ModelMutation
 import com.amplifyframework.api.graphql.model.ModelQuery
@@ -17,6 +18,7 @@ import com.amplifyframework.datastore.generated.model.Book
 import com.amplifyframework.kotlin.core.Amplify
 import com.amplifyframework.storage.StoragePath
 import com.amplifyframework.storage.result.StorageUploadFileResult
+import com.example.ambrosianaapp.analytics.AmbrosianaAnalytics
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -96,6 +98,7 @@ class NewBookViewModel(application: Application) : AndroidViewModel(application)
     fun submitForm() {
         if (!validateForm()) return
 
+        val start = System.currentTimeMillis()
         viewModelScope.launch {
             _isLoading.value = true
             _submissionState.value = SubmissionState.Submitting
@@ -139,9 +142,22 @@ class NewBookViewModel(application: Application) : AndroidViewModel(application)
                 Amplify.API.mutate(ModelMutation.create(book))
                 Log.d("NewBookViewModel", "Successfully created book: ${book.title}")
 
+                AmbrosianaAnalytics.trackApiCall(
+                    endpoint = "createBook",
+                    isSuccess = false,
+                    durationMs = System.currentTimeMillis() - start,
+                )
+
                 _submissionState.value = SubmissionState.Success
             } catch (e: Exception) {
                 Log.e("NewBookViewModel", "Failed to create book", e)
+                AmbrosianaAnalytics.trackApiCall(
+                    endpoint = "createBook",
+                    isSuccess = false,
+                    durationMs = System.currentTimeMillis() - start,
+                    errorType = e.javaClass.simpleName,
+                    errorMessage = e.message ?: "Unknown error"
+                )
                 _submissionState.value = SubmissionState.Error(e.message ?: "Failed to create book")
             } finally {
                 _isLoading.value = false

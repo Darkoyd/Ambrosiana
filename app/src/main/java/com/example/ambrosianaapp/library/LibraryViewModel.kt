@@ -1,9 +1,11 @@
 package com.example.ambrosianaapp.library
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import aws.smithy.kotlin.runtime.io.IOException
+import com.amplifyframework.analytics.AnalyticsEvent
 import com.amplifyframework.annotations.InternalAmplifyApi
 import com.amplifyframework.api.ApiException
 import com.amplifyframework.api.graphql.model.ModelQuery
@@ -14,19 +16,27 @@ import com.amplifyframework.datastore.generated.model.BookLibrary
 import com.amplifyframework.datastore.generated.model.UserLibrary
 import com.amplifyframework.datastore.generated.model.UserLibraryPath
 import com.amplifyframework.kotlin.core.Amplify
+import com.example.ambrosianaapp.analytics.AmbrosianaAnalytics
+import com.example.ambrosianaapp.auth.AmplifyAuthManager
+import com.example.ambrosianaapp.components.rememberToastState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 
-class LibraryViewModel : ViewModel() {
+class LibraryViewModel (
+    private val authManager: AmplifyAuthManager = AmplifyAuthManager()
+) : ViewModel() {
     companion object {
         private const val TAG = "LibraryViewModel"
     }
 
     val _uiState = MutableStateFlow<LibraryUiState>(LibraryUiState.Loading)
     val uiState: StateFlow<LibraryUiState> = _uiState.asStateFlow()
+
+    val _navigateToMainActivity = MutableStateFlow(false)
+    val navigateToMainActivity: StateFlow<Boolean> get() = _navigateToMainActivity
 
     private var lastBookId: String? = null
     private var isLoading = false
@@ -139,6 +149,7 @@ class LibraryViewModel : ViewModel() {
 
     private suspend fun fetchBooksForLibrary(libraryId: String): List<BookLibrary>? =
         supervisorScope {
+            val start = System.currentTimeMillis()
             try {
                 val response = Amplify.API.query(
                     ModelQuery.get<UserLibrary, UserLibraryPath>(
@@ -155,18 +166,34 @@ class LibraryViewModel : ViewModel() {
                 )
 
                 if (response.data == null) {
-                    Log.e(TAG, "Books query response data is null")
                     throw IOException("Failed to fetch books: response data is null")
                 }
 
                 val books = (response.data.books as? LoadedModelList<BookLibrary>)?.items?.toList()
                 Log.d(TAG, "Fetched ${books?.size ?: 0} books for library")
+
+                val duration = System.currentTimeMillis() - start
+                AmbrosianaAnalytics.trackApiCall(
+                    endpoint = "fetchBooksForLibrary",
+                    isSuccess = true,
+                    durationMs = duration
+                )
                 books
             } catch (e: ApiException) {
                 Log.e(TAG, "Query failed", e)
+
+                val duration = System.currentTimeMillis() - start
+                AmbrosianaAnalytics.trackApiCall(
+                    endpoint = "fetchBooksForLibrary",
+                    isSuccess = false,
+                    durationMs = duration,
+                    errorType = e.javaClass.simpleName,
+                    errorMessage = e.message ?: "Unknown error"
+                )
                 throw IOException("Failed to fetch books", e)
             }
         }
+
 
     fun loadMore() {
         if (!isLoading && lastBookId != null) {
@@ -194,5 +221,20 @@ class LibraryViewModel : ViewModel() {
                 isLoadingMore = isLoadingMore
             )
         }
+    }
+
+    fun signOut() {
+        viewModelScope.launch {
+            try {
+                authManager.signOut()
+                _navigateToMainActivity.value = true
+            } catch (e: Exception) {
+                Log.e(TAG, "Auth error: ${e.message}")
+            }
+        }
+    }
+
+    fun onNavHandled() {
+        _navigateToMainActivity.value = false
     }
 }

@@ -4,12 +4,15 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import aws.smithy.kotlin.runtime.io.IOException
+import com.amplifyframework.analytics.AnalyticsEvent
 import com.amplifyframework.api.ApiException
 import com.amplifyframework.api.graphql.model.ModelQuery
 import com.amplifyframework.core.model.LazyModelList
 import com.amplifyframework.core.model.LazyModelReference
 import com.amplifyframework.datastore.generated.model.Book
 import com.amplifyframework.kotlin.core.Amplify
+import com.example.ambrosianaapp.analytics.AmbrosianaAnalytics
+import com.example.ambrosianaapp.auth.AmplifyAuthManager
 import com.example.ambrosianaapp.library.AuthorUiModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +20,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 
-class SearchViewModel : ViewModel() {
+class SearchViewModel(
+) : ViewModel() {
     companion object {
         private const val TAG = "SearchViewModel"
         private const val PAGE_SIZE = 20
@@ -56,6 +60,7 @@ class SearchViewModel : ViewModel() {
         }
 
         viewModelScope.launch {
+            val start = System.currentTimeMillis()
             try {
                 isLoading = true
 
@@ -103,16 +108,30 @@ class SearchViewModel : ViewModel() {
                                 )
                             }
                         }
+
                         bui
                     } catch (e: Exception) {
                         null
                     }
                 }
+                AmbrosianaAnalytics.trackApiCall(
+                    endpoint = "fetchBooks",
+                    isSuccess = true,
+                    durationMs = System.currentTimeMillis() - start,
+                    properties = mapOf("SeqrchQuery" to currentSearchQuery)
+                )
 
 
                 _uiState.value = SearchUiState.Success(uibooks)
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to load books", e)
+                AmbrosianaAnalytics.trackApiCall(
+                    "fetchBooks",
+                    isSuccess = false,
+                    durationMs = System.currentTimeMillis() - start,
+                    errorType = e.javaClass.simpleName,
+                    errorMessage = e.message ?: "Unknown error"
+                )
 
             } finally {
                 isLoading = false
@@ -172,4 +191,5 @@ class SearchViewModel : ViewModel() {
         nextToken = null
         loadBooks(true)
     }
+
 }
